@@ -53,6 +53,9 @@ contract BPoolBase is BBronze, BToken, BMath {
 
   event LOG_CALL(bytes4 indexed sig, address indexed caller, bytes data);
 
+  event LOG_DENORM_UPDATED(address token, uint256 newDenorm);
+  event LOG_DESIRED_DENORM_SET(address token, uint256 desiredDenorm);
+
   modifier _logs_() {
     emit LOG_CALL(msg.sig, msg.sender, msg.data);
     _;
@@ -204,9 +207,8 @@ contract BPoolBase is BBronze, BToken, BMath {
     outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
     _records[address(tokenOut)].balance = outRecord.balance;
 
-    bool didUpdateIn = _updateDenorm(inRecord, address(tokenIn));
-    bool didUpdateOut = _updateDenorm(outRecord, address(tokenOut));
-    bool didUpdate = didUpdateIn || didUpdateOut;
+    _updateDenorm(inRecord, address(tokenIn));
+    _updateDenorm(outRecord, address(tokenOut));
 
     spotPriceAfter = calcSpotPrice(
       inRecord.balance,
@@ -216,7 +218,7 @@ contract BPoolBase is BBronze, BToken, BMath {
       _swapFee
     );
     // Only validate the resulting spot price if the weights did not change.
-    require(didUpdate || spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
+    // require(didUpdate || spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
     require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
     require(
       spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut),
@@ -281,10 +283,8 @@ contract BPoolBase is BBronze, BToken, BMath {
     outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
     _records[address(tokenOut)].balance = outRecord.balance;
 
-    bool didUpdate = (
-      _updateDenorm(inRecord, address(tokenIn)) &&
-      _updateDenorm(outRecord, address(tokenOut))
-    );
+    _updateDenorm(inRecord, address(tokenIn));
+    _updateDenorm(outRecord, address(tokenOut));
 
     spotPriceAfter = calcSpotPrice(
       inRecord.balance,
@@ -294,7 +294,7 @@ contract BPoolBase is BBronze, BToken, BMath {
       _swapFee
     );
     // Only validate the resulting spot price if the weights did not change.
-    require(didUpdate || spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
+    // require(didUpdate || spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
     require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
     require(
       spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut),
@@ -391,6 +391,7 @@ contract BPoolBase is BBronze, BToken, BMath {
     require(desiredDenorm <= MAX_WEIGHT, "ERR_MAX_WEIGHT");
     record.desiredDenorm = desiredDenorm;
     _records[token].desiredDenorm = desiredDenorm;
+    emit LOG_DESIRED_DENORM_SET(token, desiredDenorm);
     _updateDenorm(record, token);
   }
 
@@ -468,7 +469,7 @@ contract BPoolBase is BBronze, BToken, BMath {
       _totalWeight = bsub(_totalWeight, diff);
       // Don't need to verify total weight since it is decreasing
     }
-
+    emit LOG_DENORM_UPDATED(token, denorm);
     // If the new weight is 0, unbind it.
     if (denorm == 0) {
       _onUnbind(token);

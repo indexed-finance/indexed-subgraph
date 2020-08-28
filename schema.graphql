@@ -1,20 +1,21 @@
 type Category @entity {
   id: ID!
   metadataHash: Bytes!
-  tokens: [Token!]! @derivedFrom(field: "category")
+  tokens: [Token!]!
   indexPools: [IndexPool!]! @derivedFrom(field: "category")
 }
 
 type Token @entity {
   id: ID!
-  address: Bytes!
   category: Category!
 }
 
-type PoolToken {
+type PoolToken @entity {
   id: ID!
   balance: BigInt!
   token: Token!
+  denorm: BigInt!
+  desiredDenorm: BigInt!
 }
 
 type IndexPool @entity {
@@ -22,4 +23,5 @@ type IndexPool @entity {
   category: Category!
   size: Int!
   tokens: [PoolToken!]!
+  totalWeight: BigInt!
 }

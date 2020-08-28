@@ -8,49 +8,92 @@ dataSources:
     name: MarketOracle
     network: mainnet
     source:
-      address: 0x0000000000000000000000000000000000000000
+      address: '0x0000000000000000000000000000000000000000'
       abi: MarketOracle
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Gravatar
+        - Category
+        - Token
       abis:
-        - name: TokenCategory
+        - name: MarketOracle
           file: ./abis/MarketOracle.json
       eventHandlers:
         - event: CategoryAdded(uint256,bytes32)
+          handler: handleNewCategory
+        - event: TokenAdded(address,uint256)
+          handler: handleTokenAdded
+        - event: CategorySorted(uint256)
+          handler: handleCategorySorted
       file: ./src/oracle-mapping.ts
-
   - kind: ethereum/contract
     name: PoolController
     network: mainnet
     source:
-      address: 0x1111111111111111111111111111111111111111
+      address: '0x1111111111111111111111111111111111111111'
       abi: PoolController
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
-  - kind: ethereum/contract
-    name: Gravity
+      entities:
+        - IndexPool
+        - PoolToken
+      abis:
+        - name: PoolController
+          file: ./abis/PoolController.json
+      eventHandlers:
+        - event: LOG_NEW_POOL(indexed address,indexed address,uint256,uint256)
+          handler: handleNewPool
+      file: ./src/controller-mapping.ts
+templates:
+  - name: BPool
+    kind: ethereum/contract
     network: mainnet
     source:
-      address: '0x2E645469f354BB4F5c8a05B3b30A929361cf77eC'
-      abi: Gravity
+      abi: BPool
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
+      file: ./src/pool-mapping.ts
       entities:
-        - Gravatar
+        - IndexPool
       abis:
-        - name: Gravity
-          file: ./abis/Gravity.json
+        - name: BPool
+          file: ./abis/BPool.json
       eventHandlers:
-        - event: NewGravatar(uint256,address,string,string)
-          handler: handleNewGravatar
-        - event: UpdatedGravatar(uint256,address,string,string)
-          handler: handleUpdatedGravatar
-      file: ./src/mapping.ts
+        - event: LOG_SWAP(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleSwap
+        - event: LOG_JOIN(indexed address,indexed address,uint256)
+          handler: handleJoin
+        - event: LOG_EXIT(indexed address,indexed address,uint256)
+          handler: handleExit
+        - event: LOG_DENORM_UPDATED(address,uint256)
+          handler: handleDenormUpdated
+        - event: LOG_DESIRED_DENORM_SET(address,uint256)
+          handler: handleDesiredDenormSet
+
+  # - kind: ethereum/contract
+  #   name: Gravity
+  #   network: mainnet
+  #   source:
+  #     address: '0x2E645469f354BB4F5c8a05B3b30A929361cf77eC'
+  #     abi: Gravity
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.4
+  #     language: wasm/assemblyscript
+  #     entities:
+  #       - Gravatar
+  #     abis:
+  #       - name: Gravity
+  #         file: ./abis/Gravity.json
+  #     eventHandlers:
+  #       - event: NewGravatar(uint256,address,string,string)
+  #         handler: handleNewGravatar
+  #       - event: UpdatedGravatar(uint256,address,string,string)
+  #         handler: handleUpdatedGravatar
+  #     file: ./src/mapping.ts
