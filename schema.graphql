@@ -1,7 +1,7 @@
 type Category @entity {
   id: ID!
   metadataHash: Bytes!
-  tokens: [Token!]!
+  tokens: [String!]!
   indexPools: [IndexPool!]! @derivedFrom(field: "category")
 }
 
