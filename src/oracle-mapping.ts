@@ -6,7 +6,6 @@ export function handleNewCategory(event: CategoryAdded): void {
   let category = new Category(event.params.categoryID.toHex());
   category.metadataHash = event.params.metadataHash;
   category.tokens = [];
-  category.indexPools = [];
   category.save();
 }
 
