@@ -15,6 +15,7 @@ export function handleNewPool(event: LOG_NEW_POOL): void {
   pool.size = event.params.indexSize.toI32();
   pool.tokens = [];
   pool.totalWeight = bpool.getTotalDenormalizedWeight();
+  pool.totalSupply = bpool.totalSupply();
   // Create PoolUnderlyingToken entities and add them to the IndexPool
   let tokens = bpool.getCurrentTokens();
   for (let i = 0; i < tokens.length; i++) {
