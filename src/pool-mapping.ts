@@ -30,6 +30,7 @@ function loadIndexPoolBalance(
   if (bal == null) {
     bal = new IndexPoolBalance(balanceID);
     bal.pool = poolAddress.toHexString();
+    bal.balance = new BigInt(0);
     bal.save();
   }
   // make the compiler feel better about its pedantry
