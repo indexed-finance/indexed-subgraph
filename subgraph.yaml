@@ -63,6 +63,7 @@ templates:
         - IndexPool
         - IndexPoolBalance
         - PoolUnderlyingToken
+        - DailyPoolSnapshot
       abis:
         - name: BPool
           file: ./abis/BPool.json
