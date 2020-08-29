@@ -25,7 +25,7 @@ export function handleCategorySorted(event: CategorySorted): void {
   let category = Category.load(event.params.categoryID.toHexString());
   let oracle = MarketOracle.bind(event.address);
   let tokens = oracle.getCategoryTokens(event.params.categoryID);
-  let arr = [];
+  let arr: string[] = [];
   for (let i = 0; i < tokens.length; i++) {
     arr.push(tokens[i].toHexString());
   }
