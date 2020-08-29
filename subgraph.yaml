@@ -60,7 +60,6 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
-      file: ./src/pool-mapping.ts
       entities:
         - IndexPool
         - IndexPoolBalance
@@ -82,3 +81,4 @@ templates:
           handler: handleDesiredDenormSet
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+      file: ./src/pool-mapping.ts

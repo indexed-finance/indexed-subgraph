@@ -1,10 +1,10 @@
 import { LOG_NEW_POOL } from '../generated/PoolController/PoolController';
-import { Category, IndexPool, PoolUnderlyingToken } from '../generated/schema';
+import { IndexPool, PoolUnderlyingToken } from '../generated/schema';
 import { BPool } from '../generated/templates';
 import { BPool as BPoolContract } from '../generated/templates/BPool/BPool';
 
 export function handleNewPool(event: LOG_NEW_POOL): void {
-  let categoryID = event.params.categoryID.toHex();
+  let categoryID = event.params.categoryID.toHexString();
   let poolAddress = event.params.pool;
   // Start tracking the new pool contract
   BPool.create(poolAddress);
