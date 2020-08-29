@@ -6,9 +6,9 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: MarketOracle
-    network: mainnet
+    network: rinkeby
     source:
-      address: '0x0000000000000000000000000000000000000000'
+      address: '0x0667343C3A12F19bAC0EB0aC45E9C9Fa2c063da6'
       abi: MarketOracle
     mapping:
       kind: ethereum/events
@@ -30,9 +30,9 @@ dataSources:
       file: ./src/oracle-mapping.ts
   - kind: ethereum/contract
     name: PoolController
-    network: mainnet
+    network: rinkeby
     source:
-      address: '0x1111111111111111111111111111111111111111'
+      address: '0xEB8e735844A2ffdB9E7F2f806696E97D5014ebB4'
       abi: PoolController
     mapping:
       kind: ethereum/events
@@ -40,7 +40,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - IndexPool
-        - PoolToken
+        - PoolUnderlyingToken
       abis:
         - name: PoolController
           file: ./abis/PoolController.json
@@ -51,7 +51,7 @@ dataSources:
 templates:
   - name: BPool
     kind: ethereum/contract
-    network: mainnet
+    network: rinkeby
     source:
       abi: BPool
     mapping:
@@ -61,6 +61,8 @@ templates:
       file: ./src/pool-mapping.ts
       entities:
         - IndexPool
+        - IndexPoolBalance
+        - PoolUnderlyingToken
       abis:
         - name: BPool
           file: ./abis/BPool.json
@@ -75,25 +77,5 @@ templates:
           handler: handleDenormUpdated
         - event: LOG_DESIRED_DENORM_SET(address,uint256)
           handler: handleDesiredDenormSet
-
-  # - kind: ethereum/contract
-  #   name: Gravity
-  #   network: mainnet
-  #   source:
-  #     address: '0x2E645469f354BB4F5c8a05B3b30A929361cf77eC'
-  #     abi: Gravity
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.4
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - Gravatar
-  #     abis:
-  #       - name: Gravity
-  #         file: ./abis/Gravity.json
-  #     eventHandlers:
-  #       - event: NewGravatar(uint256,address,string,string)
-  #         handler: handleNewGravatar
-  #       - event: UpdatedGravatar(uint256,address,string,string)
-  #         handler: handleUpdatedGravatar
-  #     file: ./src/mapping.ts
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
