@@ -32,7 +32,6 @@ type IndexPoolBalance @entity {
   # id is bal-poolAddress-ownerAddress
   id: ID!
   pool: IndexPool!
-  token: Token!
   balance: BigInt!
 }
 
