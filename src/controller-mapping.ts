@@ -1,5 +1,5 @@
 import { LOG_NEW_POOL } from '../generated/PoolController/PoolController';
-import { Category, IndexPool, PoolToken } from '../generated/schema';
+import { Category, IndexPool, PoolUnderlyingToken } from '../generated/schema';
 import { BPool } from '../generated/templates';
 import { BPool as BPoolContract } from '../generated/templates/BPool/BPool';
 
@@ -15,12 +15,12 @@ export function handleNewPool(event: LOG_NEW_POOL): void {
   pool.size = event.params.indexSize;
   pool.tokens = [];
   pool.totalWeight = bpool.getTotalDenormalizedWeight();
-  // Create PoolToken entities and add them to the IndexPool
+  // Create PoolUnderlyingToken entities and add them to the IndexPool
   let tokens = bpool.getCurrentTokens();
   for (let tokenAddress of tokens) {
     let record = bpool.getTokenRecord(tokenAddress);
     let tokenID = poolAddress.toHex() + '-' + tokenAddress.toHex();
-    let token = new PoolToken(tokenID);
+    let token = new PoolUnderlyingToken(tokenID);
     token.token = tokenAddress.toHex();
     token.denorm = record.denorm;
     token.desiredDenorm = record.desiredDenorm;
