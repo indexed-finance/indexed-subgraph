@@ -1,62 +1,64 @@
 import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, BPool } from "../generated/templates/BPool/BPool";
 import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot } from "../generated/schema";
-import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, ethereum, BigInt } from "@graphprotocol/graph-ts";
 
-const toStr = (addr: string | Address) => typeof addr == 'string' ? addr : addr.toHex();
-
-function underlyingTokenID(
-  poolAddress: string | Address,
-  tokenAddress: string | Address
-): string {
-  let _poolID = toStr(poolAddress);
-  let _tokenID = toStr(tokenAddress);
-  return `${_poolID}-${_tokenID}`;
+function joinHyphen(a: Address, b: Address): string {
+  return a.toHexString().concat('-').concat(b.toHexString());
 }
 
 function loadUnderlyingToken(
-  poolAddress: string | Address,
-  tokenAddress: string | Address
+  poolAddress: Address,
+  tokenAddress: Address
 ): PoolUnderlyingToken {
-  const tokenID = underlyingTokenID(poolAddress, tokenAddress);
-  return PoolUnderlyingToken.load(tokenID);
+  let tokenID = joinHyphen(poolAddress, tokenAddress);
+  return PoolUnderlyingToken.load(tokenID) as PoolUnderlyingToken;
 }
 
 function indexPoolBalanceID(
-  poolAddress: string | Address,
-  ownerAddress: string | Address
+  poolAddress: Address,
+  ownerAddress: Address
 ): string {
-  let _poolID = toStr(poolAddress);
-  let _ownerID = toStr(ownerAddress);
-  return `bal-${_poolID}-${_ownerID}`;
+  return `bal-`.concat(joinHyphen(poolAddress, ownerAddress));
 }
 
 function loadIndexPoolBalance(
-  poolAddress: string | Address,
-  ownerAddress: string | Address
+  poolAddress: Address,
+  ownerAddress: Address
 ): IndexPoolBalance {
-  const balanceID = indexPoolBalanceID(poolAddress, ownerAddress);
+  let balanceID = indexPoolBalanceID(poolAddress, ownerAddress);
   let bal = IndexPoolBalance.load(balanceID);
   if (bal == null) {
     bal = new IndexPoolBalance(balanceID);
-    bal.pool = toStr(poolAddress);
+    bal.pool = poolAddress.toHexString();
     bal.save();
   }
-  return bal;
+  // make the compiler feel better about its pedantry
+  return bal as IndexPoolBalance;
 }
 
 function updateDailySnapshot(event: ethereum.Event): void {
-  // poolAddress: string | Address, timestamp: BigInt
-  const timestamp = event.block.timestamp.toI32();
-  const dayID = timestamp / 86400;
-  const poolDayID = `${toStr(event.address)}-${dayID}`;
-  if (DailyPoolSnapshot.load(poolDayID)) return;
-  const snapshot = new DailyPoolSnapshot(poolDayID);
-  const bpool = BPool.bind(event.address);
-  const tokens = bpool.getCurrentTokens();
-  snapshot.tokens = tokens.map(t => t.toHex());
-  const records = tokens.map(t => bpool.getTokenRecord(t));
-  snapshot.balances = records.map(r => r.balance);
-  snapshot.pool = event.address.toHex();
+  let timestamp = event.block.timestamp.toI32();
+  let dayID = timestamp / 86400;
+  let poolDayID = event.address
+    .toHexString()
+    .concat('-')
+    .concat(BigInt.fromI32(dayID).toString());
+  // If we already have a daily snapshot, don't do anything.
+  if (DailyPoolSnapshot.load(poolDayID) != null) return;
+
+  let snapshot = new DailyPoolSnapshot(poolDayID);
+  snapshot.tokens = [];
+  snapshot.balances = [];
+
+  let bpool = BPool.bind(event.address);
+  let tokens = bpool.getCurrentTokens();
+  for (let i = 0; i < tokens.length; i++) {
+    let token = tokens[i];
+    snapshot.tokens.push(token.toHexString());
+    let record = bpool.getTokenRecord(token);
+    snapshot.balances.push(record.balance);
+  }
+  snapshot.pool = event.address.toHexString();
   snapshot.save();
 }
 
@@ -98,13 +100,13 @@ export function handleDesiredDenormSet(event: LOG_DESIRED_DENORM_SET): void {
 }
 
 export function handleTransfer(event: Transfer): void {
-  const isMint = event.params.src.toHex() == `0x${'00'.repeat(20)}`;
+  let isMint = event.params.src.toHexString() == `0x${'00'.repeat(20)}`;
   if (!isMint) {
     let sender = loadIndexPoolBalance(event.address, event.params.src);
     sender.balance = sender.balance.minus(event.params.amt);
     sender.save();
   }
-  const isBurn = event.params.dst.toHex() == `0x${'00'.repeat(20)}`;
+  let isBurn = event.params.dst.toHexString() == `0x${'00'.repeat(20)}`;
   if (!isBurn) {
     let receiver = loadIndexPoolBalance(event.address, event.params.dst);
     receiver.balance = receiver.balance.plus(event.params.amt);
