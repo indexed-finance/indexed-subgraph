@@ -59,6 +59,7 @@ function updateDailySnapshot(event: ethereum.Event): void {
     snapshot.balances.push(record.balance);
   }
   snapshot.pool = event.address.toHexString();
+  snapshot.timestamp = timestamp;
   snapshot.save();
 }
 
