@@ -1,6 +1,6 @@
-import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer } from "../generated/templates/BPool/BPool";
-import { PoolUnderlyingToken, IndexPoolBalance } from "../generated/schema";
-import { Address } from "@graphprotocol/graph-ts";
+import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, BPool } from "../generated/templates/BPool/BPool";
+import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot } from "../generated/schema";
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
 
 const toStr = (addr: string | Address) => typeof addr == 'string' ? addr : addr.toHex();
 
@@ -44,6 +44,22 @@ function loadIndexPoolBalance(
   return bal;
 }
 
+function updateDailySnapshot(event: ethereum.Event): void {
+  // poolAddress: string | Address, timestamp: BigInt
+  const timestamp = event.block.timestamp.toI32();
+  const dayID = timestamp / 86400;
+  const poolDayID = `${toStr(event.address)}-${dayID}`;
+  if (DailyPoolSnapshot.load(poolDayID)) return;
+  const snapshot = new DailyPoolSnapshot(poolDayID);
+  const bpool = BPool.bind(event.address);
+  const tokens = bpool.getCurrentTokens();
+  snapshot.tokens = tokens.map(t => t.toHex());
+  const records = tokens.map(t => bpool.getTokenRecord(t));
+  snapshot.balances = records.map(r => r.balance);
+  snapshot.pool = event.address.toHex();
+  snapshot.save();
+}
+
 export function handleSwap(event: LOG_SWAP): void {
   let tokenIn = loadUnderlyingToken(event.address, event.params.tokenIn);
   let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
@@ -51,6 +67,7 @@ export function handleSwap(event: LOG_SWAP): void {
   tokenOut.balance = tokenOut.balance.minus(event.params.tokenAmountOut);
   tokenIn.save();
   tokenOut.save();
+  updateDailySnapshot(event);
 }
 
 export function handleJoin(event: LOG_JOIN): void {
@@ -63,18 +80,21 @@ export function handleExit(event: LOG_EXIT): void {
   let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
   tokenOut.balance = tokenOut.balance.minus(event.params.tokenAmountOut);
   tokenOut.save();
+  updateDailySnapshot(event);
 }
 
 export function handleDenormUpdated(event: LOG_DENORM_UPDATED): void {
   let token = loadUnderlyingToken(event.address, event.params.token);
   token.denorm = event.params.newDenorm;
   token.save();
+  updateDailySnapshot(event);
 }
 
 export function handleDesiredDenormSet(event: LOG_DESIRED_DENORM_SET): void {
   let token = loadUnderlyingToken(event.address, event.params.token);
   token.desiredDenorm = event.params.desiredDenorm;
   token.save();
+  updateDailySnapshot(event);
 }
 
 export function handleTransfer(event: Transfer): void {
@@ -90,4 +110,5 @@ export function handleTransfer(event: Transfer): void {
     receiver.balance = receiver.balance.plus(event.params.amt);
     receiver.save();
   }
+  updateDailySnapshot(event);
 }
