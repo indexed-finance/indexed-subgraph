@@ -44,6 +44,8 @@ dataSources:
         - IndexPool
         - PoolUnderlyingToken
       abis:
+        - name: BPool
+          file: ./abis/BPool.json
         - name: PoolController
           file: ./abis/PoolController.json
       eventHandlers:
