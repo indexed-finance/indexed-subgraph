@@ -110,6 +110,64 @@ export class Token extends Entity {
   }
 }
 
+export class DailyPoolSnapshot extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save DailyPoolSnapshot entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save DailyPoolSnapshot entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("DailyPoolSnapshot", id.toString(), this);
+  }
+
+  static load(id: string): DailyPoolSnapshot | null {
+    return store.get("DailyPoolSnapshot", id) as DailyPoolSnapshot | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get tokens(): Array<string> {
+    let value = this.get("tokens");
+    return value.toStringArray();
+  }
+
+  set tokens(value: Array<string>) {
+    this.set("tokens", Value.fromStringArray(value));
+  }
+
+  get balances(): Array<BigInt> {
+    let value = this.get("balances");
+    return value.toBigIntArray();
+  }
+
+  set balances(value: Array<BigInt>) {
+    this.set("balances", Value.fromBigIntArray(value));
+  }
+
+  get pool(): string {
+    let value = this.get("pool");
+    return value.toString();
+  }
+
+  set pool(value: string) {
+    this.set("pool", Value.fromString(value));
+  }
+}
+
 export class PoolUnderlyingToken extends Entity {
   constructor(id: string) {
     super();
@@ -317,5 +375,14 @@ export class IndexPool extends Entity {
 
   set totalSupply(value: BigInt) {
     this.set("totalSupply", Value.fromBigInt(value));
+  }
+
+  get dailySnapshots(): Array<string> {
+    let value = this.get("dailySnapshots");
+    return value.toStringArray();
+  }
+
+  set dailySnapshots(value: Array<string>) {
+    this.set("dailySnapshots", Value.fromStringArray(value));
   }
 }
