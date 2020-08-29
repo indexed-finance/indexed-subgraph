@@ -1,5 +1,5 @@
 import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, BPool } from "../generated/templates/BPool/BPool";
-import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot } from "../generated/schema";
+import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool } from "../generated/schema";
 import { Address, ethereum, BigInt } from "@graphprotocol/graph-ts";
 
 function joinHyphen(a: Address, b: Address): string {
@@ -105,12 +105,20 @@ export function handleTransfer(event: Transfer): void {
     let sender = loadIndexPoolBalance(event.address, event.params.src);
     sender.balance = sender.balance.minus(event.params.amt);
     sender.save();
+  } else {
+    let pool = IndexPool.load(event.address.toHexString());
+    pool.totalSupply = pool.totalSupply.plus(event.params.amt);
+    pool.save();
   }
   let isBurn = event.params.dst.toHexString() == `0x${'00'.repeat(20)}`;
   if (!isBurn) {
     let receiver = loadIndexPoolBalance(event.address, event.params.dst);
     receiver.balance = receiver.balance.plus(event.params.amt);
     receiver.save();
+  } else {
+    let pool = IndexPool.load(event.address.toHexString());
+    pool.totalSupply = pool.totalSupply.minus(event.params.amt);
+    pool.save();
   }
   updateDailySnapshot(event);
 }
