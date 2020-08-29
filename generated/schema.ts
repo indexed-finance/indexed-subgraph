@@ -110,7 +110,7 @@ export class Token extends Entity {
   }
 }
 
-export class PoolToken extends Entity {
+export class PoolUnderlyingToken extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -118,17 +118,17 @@ export class PoolToken extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id !== null, "Cannot save PoolToken entity without an ID");
+    assert(id !== null, "Cannot save PoolUnderlyingToken entity without an ID");
     assert(
       id.kind == ValueKind.STRING,
-      "Cannot save PoolToken entity with non-string ID. " +
+      "Cannot save PoolUnderlyingToken entity with non-string ID. " +
         'Considering using .toHex() to convert the "id" to a string.'
     );
-    store.set("PoolToken", id.toString(), this);
+    store.set("PoolUnderlyingToken", id.toString(), this);
   }
 
-  static load(id: string): PoolToken | null {
-    return store.get("PoolToken", id) as PoolToken | null;
+  static load(id: string): PoolUnderlyingToken | null {
+    return store.get("PoolUnderlyingToken", id) as PoolUnderlyingToken | null;
   }
 
   get id(): string {
@@ -174,6 +174,64 @@ export class PoolToken extends Entity {
 
   set desiredDenorm(value: BigInt) {
     this.set("desiredDenorm", Value.fromBigInt(value));
+  }
+}
+
+export class IndexPoolBalance extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save IndexPoolBalance entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save IndexPoolBalance entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("IndexPoolBalance", id.toString(), this);
+  }
+
+  static load(id: string): IndexPoolBalance | null {
+    return store.get("IndexPoolBalance", id) as IndexPoolBalance | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get pool(): string {
+    let value = this.get("pool");
+    return value.toString();
+  }
+
+  set pool(value: string) {
+    this.set("pool", Value.fromString(value));
+  }
+
+  get token(): string {
+    let value = this.get("token");
+    return value.toString();
+  }
+
+  set token(value: string) {
+    this.set("token", Value.fromString(value));
+  }
+
+  get balance(): BigInt {
+    let value = this.get("balance");
+    return value.toBigInt();
+  }
+
+  set balance(value: BigInt) {
+    this.set("balance", Value.fromBigInt(value));
   }
 }
 
@@ -234,6 +292,15 @@ export class IndexPool extends Entity {
     this.set("tokens", Value.fromStringArray(value));
   }
 
+  get balances(): Array<string> {
+    let value = this.get("balances");
+    return value.toStringArray();
+  }
+
+  set balances(value: Array<string>) {
+    this.set("balances", Value.fromStringArray(value));
+  }
+
   get totalWeight(): BigInt {
     let value = this.get("totalWeight");
     return value.toBigInt();
@@ -241,5 +308,14 @@ export class IndexPool extends Entity {
 
   set totalWeight(value: BigInt) {
     this.set("totalWeight", Value.fromBigInt(value));
+  }
+
+  get totalSupply(): BigInt {
+    let value = this.get("totalSupply");
+    return value.toBigInt();
+  }
+
+  set totalSupply(value: BigInt) {
+    this.set("totalSupply", Value.fromBigInt(value));
   }
 }
