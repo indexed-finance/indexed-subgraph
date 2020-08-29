@@ -6,11 +6,13 @@ type Category @entity {
 }
 
 type Token @entity {
+  # id is token address
   id: ID!
   category: Category!
 }
 
-type PoolToken @entity {
+type PoolUnderlyingToken @entity {
+  # id is poolAddress-tokenAddress
   id: ID!
   balance: BigInt!
   token: Token!
@@ -18,10 +20,21 @@ type PoolToken @entity {
   desiredDenorm: BigInt!
 }
 
+type IndexPoolBalance @entity {
+  # id is bal-poolAddress-ownerAddress
+  id: ID!
+  pool: IndexPool!
+  token: Token!
+  balance: BigInt!
+}
+
 type IndexPool @entity {
+  # id is index pool address
   id: ID!
   category: Category!
   size: Int!
-  tokens: [PoolToken!]!
+  tokens: [PoolUnderlyingToken!]!
+  balances: [IndexPoolBalance!]! @derivedFrom(field: "pool")
   totalWeight: BigInt!
+  totalSupply: BigInt!
 }
