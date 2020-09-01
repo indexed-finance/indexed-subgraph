@@ -22,6 +22,7 @@ type DailyPoolSnapshot @entity {
 type PoolUnderlyingToken @entity {
   # id is poolAddress-tokenAddress
   id: ID!
+  pool: IndexPool!
   balance: BigInt!
   token: Token!
   denorm: BigInt!
@@ -40,7 +41,7 @@ type IndexPool @entity {
   id: ID!
   category: Category!
   size: Int!
-  tokens: [PoolUnderlyingToken!]!
+  tokens: [PoolUnderlyingToken!]! @derivedFrom(field: "pool")
   balances: [IndexPoolBalance!]! @derivedFrom(field: "pool")
   totalWeight: BigInt!
   totalSupply: BigInt!

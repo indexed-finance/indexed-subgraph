@@ -13,7 +13,7 @@ export function handleNewPool(event: LOG_NEW_POOL): void {
   let pool = new IndexPool(poolAddress.toHexString());
   pool.category = categoryID;
   pool.size = event.params.indexSize.toI32();
-  pool.tokens = [];
+  // pool.tokens = [];
   pool.totalWeight = bpool.getTotalDenormalizedWeight();
   pool.totalSupply = bpool.totalSupply();
   // Create PoolUnderlyingToken entities and add them to the IndexPool
@@ -30,8 +30,8 @@ export function handleNewPool(event: LOG_NEW_POOL): void {
     token.denorm = record.denorm;
     token.desiredDenorm = record.desiredDenorm;
     token.balance = record.balance;
+    token.pool = poolAddress.toHexString();
     token.save();
-    pool.tokens.push(tokenID);
   }
   pool.save();
 }
