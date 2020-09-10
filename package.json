@@ -4,7 +4,6 @@
   "repository": "https://github.com/indexed-finance/indexed-subgraph",
   "scripts": {
     "compile": "truffle compile",
-    "build-contract": "solc contracts/MarketOracle.sol --abi -o abis --overwrite && solc contracts/MarketOracle.sol --bin -o bin --overwrite",
     "create": "graph create indexed-finance/indexed-subgraph --node https://api.thegraph.com/deploy/",
     "create-local": "graph create indexed-finance/indexed-subgraph --node http://127.0.0.1:8020",
     "codegen": "graph codegen",
