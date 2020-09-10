@@ -30,7 +30,7 @@ function loadIndexPoolBalance(
   if (bal == null) {
     bal = new IndexPoolBalance(balanceID);
     bal.pool = poolAddress.toHexString();
-    bal.balance = new BigInt(0);
+    bal.balance = BigInt.fromI32(0);
     bal.save();
   }
   // make the compiler feel better about its pedantry
@@ -48,21 +48,23 @@ function updateDailySnapshot(event: ethereum.Event): void {
   if (DailyPoolSnapshot.load(poolDayID) != null) return;
 
   let snapshot = new DailyPoolSnapshot(poolDayID);
+  snapshot.pool = event.address.toHexString();
+  snapshot.timestamp = timestamp;
   snapshot.tokens = [];
   snapshot.balances = [];
+  snapshot.denorms = [];
+  snapshot.desiredDenorms = [];
 
   let bpool = BPool.bind(event.address);
   let tokens = bpool.getCurrentTokens();
   for (let i = 0; i < tokens.length; i++) {
     let token = tokens[i];
-    snapshot.tokens.push(token.toHexString());
     let record = bpool.getTokenRecord(token);
+    snapshot.tokens.push(token.toHexString());
     snapshot.balances.push(record.balance);
     snapshot.denorms.push(record.denorm);
     snapshot.desiredDenorms.push(record.desiredDenorm);
   }
-  snapshot.pool = event.address.toHexString();
-  snapshot.timestamp = timestamp;
   snapshot.save();
 }
 
@@ -115,24 +117,24 @@ export function handleDesiredDenormSet(event: LOG_DESIRED_DENORM_SET): void {
 }
 
 export function handleTransfer(event: Transfer): void {
+  let pool = IndexPool.load(event.address.toHexString());
   let isMint = event.params.src.toHexString() == `0x${'00'.repeat(20)}`;
-  if (!isMint) {
+  let isBurn = event.params.dst.toHexString() == `0x${'00'.repeat(20)}`;
+  if (isMint) {
+    pool.totalSupply = pool.totalSupply.plus(event.params.amt);
+  } else {
     let sender = loadIndexPoolBalance(event.address, event.params.src);
     sender.balance = sender.balance.minus(event.params.amt);
     sender.save();
-  } else {
-    let pool = IndexPool.load(event.address.toHexString());
-    pool.totalSupply = pool.totalSupply.plus(event.params.amt);
-    pool.save();
   }
-  let isBurn = event.params.dst.toHexString() == `0x${'00'.repeat(20)}`;
-  if (!isBurn) {
+  if (isBurn) {
+    pool.totalSupply = pool.totalSupply.minus(event.params.amt);
+  } else {
     let receiver = loadIndexPoolBalance(event.address, event.params.dst);
     receiver.balance = receiver.balance.plus(event.params.amt);
     receiver.save();
-  } else {
-    let pool = IndexPool.load(event.address.toHexString());
-    pool.totalSupply = pool.totalSupply.minus(event.params.amt);
+  }
+  if (isBurn || isMint) {
     pool.save();
   }
   updateDailySnapshot(event);
