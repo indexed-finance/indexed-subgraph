@@ -28,6 +28,7 @@ export function handleNewPool(event: LOG_NEW_POOL): void {
     let token = new PoolUnderlyingToken(tokenID);
     token.token = tokenAddress.toHexString();
     token.denorm = record.denorm;
+    token.ready = true;
     token.desiredDenorm = record.desiredDenorm;
     token.balance = record.balance;
     token.pool = poolAddress.toHexString();

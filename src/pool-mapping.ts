@@ -1,4 +1,4 @@
-import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, BPool } from "../generated/templates/BPool/BPool";
+import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, BPool, LOG_TOKEN_REMOVED, LOG_TOKEN_ADDED, LOG_TOKEN_READY } from "../generated/templates/BPool/BPool";
 import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool } from "../generated/schema";
 import { Address, ethereum, BigInt } from "@graphprotocol/graph-ts";
 
@@ -58,6 +58,8 @@ function updateDailySnapshot(event: ethereum.Event): void {
     snapshot.tokens.push(token.toHexString());
     let record = bpool.getTokenRecord(token);
     snapshot.balances.push(record.balance);
+    snapshot.denorms.push(record.denorm);
+    snapshot.desiredDenorms.push(record.desiredDenorm);
   }
   snapshot.pool = event.address.toHexString();
   snapshot.timestamp = timestamp;
@@ -89,6 +91,17 @@ export function handleExit(event: LOG_EXIT): void {
 
 export function handleDenormUpdated(event: LOG_DENORM_UPDATED): void {
   let token = loadUnderlyingToken(event.address, event.params.token);
+  let pool = IndexPool.load(event.address.toHexString());
+  let oldDenorm = token.denorm;
+  let newDenorm = event.params.newDenorm;
+  if (newDenorm.gt(oldDenorm)) {
+    let diff = newDenorm.minus(oldDenorm);
+    pool.totalWeight = pool.totalWeight.plus(diff);
+  } else if (oldDenorm.gt(newDenorm)) {
+    let diff = oldDenorm.minus(newDenorm);
+    pool.totalWeight = pool.totalWeight.minus(diff);
+  }
+  pool.save();
   token.denorm = event.params.newDenorm;
   token.save();
   updateDailySnapshot(event);
@@ -123,4 +136,30 @@ export function handleTransfer(event: Transfer): void {
     pool.save();
   }
   updateDailySnapshot(event);
+}
+
+export function handleTokenRemoved(event: LOG_TOKEN_REMOVED): void {
+  let record = loadUnderlyingToken(event.address, event.params.token);
+  record.pool = 'null';
+  record.save();
+}
+
+export function handleTokenAdded(event: LOG_TOKEN_ADDED): void {
+  let tokenID = joinHyphen(event.address, event.params.token);
+  let token = new PoolUnderlyingToken(tokenID);
+  token.token = event.params.token.toHexString();
+  token.ready = false;
+  token.minimumBalance = event.params.minimumBalance;
+  token.denorm = new BigInt(0);
+  token.desiredDenorm = event.params.desiredDenorm;
+  token.balance = new BigInt(0);
+  token.pool = event.address.toHexString();
+  token.save();
+}
+
+export function handleTokenReady(event: LOG_TOKEN_READY): void {
+  let token = loadUnderlyingToken(event.address, event.params.token);
+  token.ready = true;
+  token.minimumBalance = null;
+  token.save();
 }

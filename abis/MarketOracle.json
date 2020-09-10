@@ -8,7 +8,7 @@
       },
       {
         "internalType": "address",
-        "name": "_stableCoin",
+        "name": "_weth",
         "type": "address"
       },
       {
@@ -105,38 +105,74 @@
   },
   {
     "inputs": [],
-    "name": "MAX_CATEGORY_TOKENS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_SORT_DELAY",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "MIN_UPDATE_PERIOD",
     "outputs": [
       {
         "internalType": "uint32",
         "name": "",
         "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "categoryID",
+        "type": "uint256"
+      }
+    ],
+    "name": "addToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "categoryID",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokens",
+            "type": "address[]"
+          }
+        ],
+        "internalType": "struct MarketOracle.NewCategoryTokens[]",
+        "name": "updates",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "addTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "canUpdatePrice",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -291,6 +327,100 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "metadataHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "createCategory",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "categoryID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCategoryMarketCaps",
+    "outputs": [
+      {
+        "internalType": "uint144[]",
+        "name": "marketCaps",
+        "type": "uint144[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "categoryID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCategoryTokens",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "categoryID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "num",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTopCategoryTokens",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "categoryID",
+        "type": "uint256"
+      }
+    ],
+    "name": "hasCategory",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -345,16 +475,21 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "stableCoin",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "categoryID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "orderedTokens",
+        "type": "address[]"
       }
     ],
-    "stateMutability": "view",
+    "name": "orderCategoryTokensByMarketCap",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -397,155 +532,13 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "hasCategory",
+    "inputs": [],
+    "name": "weth",
     "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getCategoryTokens",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getCategoryMarketCaps",
-    "outputs": [
-      {
-        "internalType": "uint144[]",
-        "name": "marketCaps",
-        "type": "uint144[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "metadataHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "createCategory",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
         "internalType": "address",
-        "name": "token",
+        "name": "",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "addToken",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "categoryID",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address[]",
-            "name": "tokens",
-            "type": "address[]"
-          }
-        ],
-        "internalType": "struct MarketOracle.NewCategoryTokens[]",
-        "name": "updates",
-        "type": "tuple[]"
-      }
-    ],
-    "name": "addTokens",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address[]",
-        "name": "orderedTokens",
-        "type": "address[]"
-      }
-    ],
-    "name": "orderCategoryTokensByMarketCap",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "num",
-        "type": "uint256"
-      }
-    ],
-    "name": "getTopCategoryTokens",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
       }
     ],
     "stateMutability": "view",

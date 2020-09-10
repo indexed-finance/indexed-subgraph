@@ -16,14 +16,18 @@ type DailyPoolSnapshot @entity {
   timestamp: Int!
   tokens: [Token!]!
   balances: [BigInt!]!
+  denorms: [BigInt!]!
+  desiredDenorms: [BigInt!]!
   pool: IndexPool!
 }
 
 type PoolUnderlyingToken @entity {
   # id is poolAddress-tokenAddress
   id: ID!
+  ready: Boolean!
   pool: IndexPool!
   balance: BigInt!
+  minimumBalance: BigInt
   token: Token!
   denorm: BigInt!
   desiredDenorm: BigInt!
