@@ -8,9 +8,9 @@ dataSources:
     name: MarketOracle
     network: rinkeby
     source:
-      address: '0x5482270d5878686148bC5134318265236d2720d6'
+      address: '0xA9E6b9e97ABE5f384701B6BB8B222a3063D2d071'
       abi: MarketOracle
-      startBlock: 7169560
+      startBlock: 7178333
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -33,9 +33,9 @@ dataSources:
     name: PoolController
     network: rinkeby
     source:
-      address: '0x4a3778C6a67db1907c61824ACed3060461316415'
+      address: '0xE11dF46658c60E8Dd1Bb7ba6e0e72d368D42B569'
       abi: PoolController
-      startBlock: 7169562
+      startBlock: 7178339
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
