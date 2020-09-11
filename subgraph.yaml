@@ -8,7 +8,7 @@ dataSources:
     name: MarketOracle
     network: rinkeby
     source:
-      address: '0xA9E6b9e97ABE5f384701B6BB8B222a3063D2d071'
+      address: '0xB6fa09e7177A3d09BfC24B668d7a6BE00c184149'
       abi: MarketOracle
       startBlock: 7178333
     mapping:
@@ -33,7 +33,7 @@ dataSources:
     name: PoolController
     network: rinkeby
     source:
-      address: '0xE11dF46658c60E8Dd1Bb7ba6e0e72d368D42B569'
+      address: '0x3d1CBf1361e989d932367c73445f74Cd5A37A684'
       abi: PoolController
       startBlock: 7178339
     mapping:
