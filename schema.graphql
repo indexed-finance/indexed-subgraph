@@ -5,8 +5,25 @@ type Category @entity {
   indexPools: [IndexPool!]! @derivedFrom(field: "category")
 }
 
+type Proposal @entity {
+  # id = ipfsHash
+  id: ID!
+  proposer: Bytes!
+  for: BigInt!
+  against: BigInt!
+  votes: [Votes!]!
+}
+
+type Vote @entity {
+  # id = transactionHash
+  id: ID!
+  voter: Bytes!
+  option: Bool!
+  weight: BigInt!
+}
+
 type Token @entity {
-  # id is token address
+  # id = address
   id: ID!
   category: Category!
 }
@@ -22,7 +39,7 @@ type DailyPoolSnapshot @entity {
 }
 
 type PoolUnderlyingToken @entity {
-  # id is poolAddress-tokenAddress
+  # id = poolAddress-tokenAddress
   id: ID!
   ready: Boolean!
   pool: IndexPool!
@@ -34,14 +51,14 @@ type PoolUnderlyingToken @entity {
 }
 
 type IndexPoolBalance @entity {
-  # id is bal-poolAddress-ownerAddress
+  # id = bal-poolAddress-ownerAddress
   id: ID!
   pool: IndexPool!
   balance: BigInt!
 }
 
 type IndexPool @entity {
-  # id is index pool address
+  # id = index pool address
   id: ID!
   category: Category!
   size: Int!
