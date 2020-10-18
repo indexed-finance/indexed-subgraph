@@ -1,5 +1,5 @@
 specVersion: 0.0.2
-description: Indexed contracts on Rinkeby
+description: Indexed V1
 repository: https://github.com/indexed-finance/indexed-subgraph
 schema:
   file: ./schema.graphql
@@ -47,6 +47,14 @@ templates:
     network: rinkeby
     source:
       abi: UnboundTokenSeller
+      file: ./src/oracle-mapping.ts
+  - kind: ethereum/contract
+    name: GovernorAlpha
+    network: rinkeby
+    source:
+      address: '0x5220b03Cc2F5f8f38dC647636d71582a38365E72'
+      abi: GovernorAlpha
+      startBlock: 7178339
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -73,6 +81,30 @@ templates:
     network: rinkeby
     source:
       abi: PoolInitializer
+        - Proposal
+        - Vote
+      abis:
+        - name: GovernorAlpha
+          file: ./abis/GovernorAlpha.json
+      eventHandlers:
+        - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
+          handler: createProposal
+        - event: VoteCast(address,uint256,bool,uint256)
+          handler: handleVote
+        - event: ProposalCanceled(uint256)
+          handler: cancelProposal
+        - event: ProposalQueued(uint256,uint256)
+          handler: queueProposal
+        - event: ProposalExecuted(uint256)
+          handler: executeProposal
+      file: ./src/dao-mapping.ts
+  - kind: ethereum/contract
+    name: Ndx
+    network: rinkeby
+    source:
+      address: '0xe366577a6712591c2e6f76fdcb96a99ac30a74c3'
+      abi: Ndx
+      startBlock: 7178339
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -92,6 +124,20 @@ templates:
           handler: handleTokensContributed
       file: ./src/initializer-mapping.ts
   - name: IPool
+        - DailyDistributionSnapshot
+      abis:
+        - name: Ndx
+          file: ./abis/Ndx.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: DelegateVotesChanged(indexed address,uint256,uint256)
+          handler: handleDelegateVoteChange
+        - event: DelegateChanged(indexed address,indexed address,indexed address)
+          handler: handleDelegateChanged
+      file: ./src/token-mapping.ts
+templates:
+  - name: BPool
     kind: ethereum/contract
     network: rinkeby
     source:

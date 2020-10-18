@@ -1,3 +1,12 @@
+enum State {
+  Active
+  Cancelled
+  Rejected
+  Accepted
+  Queued
+  Executed
+}
+
 type Category @entity {
   id: ID!
   metadataHash: Bytes!
@@ -5,8 +14,39 @@ type Category @entity {
   indexPools: [IndexPool!]! @derivedFrom(field: "category")
 }
 
+type Proposal @entity {
+  # id = proposalCount
+  id: ID!
+  state: State!
+  proposer: Bytes!
+  action: Bytes
+  expiry: Int!
+  for: BigInt!
+  against: BigInt!
+  votes: [Vote!]
+  targets: [Bytes!]!
+  values: [Bytes!]!
+  signatures: [Bytes!]!
+  calldatas:  [Bytes!]!
+}
+
+type Vote @entity {
+  # id = transactionHash
+  id: ID!
+  voter: Bytes!
+  option: Boolean!
+  weight: BigInt!
+}
+
+type DailyDistributionSnapshot @entity {
+  id: ID!
+  active: BigInt!
+  inactive: BigInt!
+  delegated: BigInt!
+}
+
 type Token @entity {
-  # id is token address
+  # id = address
   id: ID!
 }
 
@@ -22,7 +62,7 @@ type DailyPoolSnapshot @entity {
 }
 
 type PoolUnderlyingToken @entity {
-  # id is poolAddress-tokenAddress
+  # id = poolAddress-tokenAddress
   id: ID!
   # Whether the token is initialized
   ready: Boolean!
@@ -41,7 +81,7 @@ type PoolUnderlyingToken @entity {
 }
 
 type IndexPoolBalance @entity {
-  # id is bal-poolAddress-ownerAddress
+  # id = bal-poolAddress-ownerAddress
   id: ID!
   pool: IndexPool!
   balance: BigInt!
@@ -59,7 +99,7 @@ type Swap @entity {
 }
 
 type IndexPool @entity {
-  # id is index pool address
+  # id = index pool address
   id: ID!
   # Category the pool indexes
   category: Category!
@@ -152,4 +192,5 @@ type PoolInitializer @entity {
   tokens: [InitializerToken!]! @derivedFrom(field: "poolInitializer")
   # Total amount of WETH users have been credited for
   totalCreditedWETH: BigInt!
+  dailySnapshots: [DailyPoolSnapshot!]! @derivedFrom(field: "pool")
 }
