@@ -1,9 +1,3 @@
-enum Status {
-  Inactive
-  Active
-  Delegated
-}
-
 enum State {
   Active
   Rejected
@@ -44,13 +38,11 @@ type Vote @entity {
 }
 
 type Voter @entity {
-  # id = address
+  # id = timestamp
   id: ID!
-  status: Status!
-  proxies: [Bytes!]!
-  # for: BigInt!
-  # against: BigInt!
-  # weight: BigInt!
+  active: Int!
+  inactive: Int!
+  delegated: Int!
 }
 
 type Token @entity {
