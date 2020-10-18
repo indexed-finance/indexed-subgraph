@@ -5,37 +5,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: MarketOracle
+    name: MarketCapSqrtController
     network: rinkeby
     source:
-      address: '0xB6fa09e7177A3d09BfC24B668d7a6BE00c184149'
-      abi: MarketOracle
-      startBlock: 7178333
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - Category
-        - Token
-      abis:
-        - name: MarketOracle
-          file: ./abis/MarketOracle.json
-      eventHandlers:
-        - event: CategoryAdded(uint256,bytes32)
-          handler: handleNewCategory
-        - event: TokenAdded(address,uint256)
-          handler: handleTokenAdded
-        - event: CategorySorted(uint256)
-          handler: handleCategorySorted
-      file: ./src/oracle-mapping.ts
-  - kind: ethereum/contract
-    name: PoolController
-    network: rinkeby
-    source:
-      address: '0x3d1CBf1361e989d932367c73445f74Cd5A37A684'
-      abi: PoolController
-      startBlock: 7178339
+      address: '0xe9AE62e04CD55F7e57DE760e190Eb2D43ecE8b40'
+      abi: MarketCapSqrtController
+      startBlock: 7343500
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -43,21 +18,84 @@ dataSources:
       entities:
         - IndexPool
         - PoolUnderlyingToken
+        - Category
+        - Token
       abis:
-        - name: BPool
-          file: ./abis/BPool.json
-        - name: PoolController
-          file: ./abis/PoolController.json
+        - name: IPool
+          file: ./abis/IPool.json
+        - name: MarketCapSqrtController
+          file: ./abis/MarketCapSqrtController.json
+        - name: PoolInitializer
+          file: ./abis/PoolInitializer.json
+        - name: UnboundTokenSeller
+          file: ./abis/UnboundTokenSeller.json
       eventHandlers:
-        - event: LOG_NEW_POOL(indexed address,indexed address,uint256,uint256)
+        - event: NewPoolInitializer(address,address,uint256,uint256)
           handler: handleNewPool
-      file: ./src/controller-mapping.ts
+        - event: PoolInitialized(address,address,uint256,uint256)
+          handler: handlePoolInitialized
+        - event: CategoryAdded(uint256,bytes32)
+          handler: handleNewCategory
+        - event: TokenAdded(address,uint256)
+          handler: handleTokenAdded
+        - event: CategorySorted(uint256)
+          handler: handleCategorySorted
+      file: ./src/controller.ts
 templates:
-  - name: BPool
+  - name: UnboundTokenSeller
     kind: ethereum/contract
     network: rinkeby
     source:
-      abi: BPool
+      abi: UnboundTokenSeller
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - IndexPool
+        - InitializerToken
+        - DailyPoolSnapshot
+        - Token
+        - TokenForSale
+      abis:
+        - name: UnboundTokenSeller
+          file: ./abis/UnboundTokenSeller.json
+      eventHandlers:
+        - event: PremiumPercentSet(uint8)
+          handler: handlePremiumSet
+        - event: NewTokensToSell(indexed address,uint256)
+          handler: handleNewTokensToSell
+        - event: SwappedTokens(indexed address,indexed address,uint256,uint256)
+          handler: handleTokenSwap
+      file: ./src/token-seller.ts
+  - name: PoolInitializer
+    kind: ethereum/contract
+    network: rinkeby
+    source:
+      abi: PoolInitializer
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - IndexPool
+        - InitializerToken
+        - DailyPoolSnapshot
+        - Token
+        - PoolInitializer
+        - TokenContribution
+      abis:
+        - name: PoolInitializer
+          file: ./abis/PoolInitializer.json
+      eventHandlers:
+        - event: TokensContributed(address,address,uint256,uint256)
+          handler: handleTokensContributed
+      file: ./src/initializer.ts
+  - name: IPool
+    kind: ethereum/contract
+    network: rinkeby
+    source:
+      abi: IPool
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -68,8 +106,8 @@ templates:
         - PoolUnderlyingToken
         - DailyPoolSnapshot
       abis:
-        - name: BPool
-          file: ./abis/BPool.json
+        - name: IPool
+          file: ./abis/IPool.json
       eventHandlers:
         - event: LOG_SWAP(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleSwap
@@ -85,8 +123,14 @@ templates:
           handler: handleTokenRemoved
         - event: LOG_TOKEN_ADDED(indexed address,uint256,uint256)
           handler: handleTokenAdded
+        - event: LOG_MINIMUM_BALANCE_UPDATED(address,uint256)
+          handler: handleUpdateMinimumBalance
         - event: LOG_TOKEN_READY(indexed address)
           handler: handleTokenReady
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-      file: ./src/pool-mapping.ts
+        - event: LOG_SWAP_FEE_UPDATED(uint256)
+          handler: handleSwapFeeUpdated
+        - event: LOG_MAX_TOKENS_UPDATED(uint256)
+          handler: handleMaxTokensUpdated
+      file: ./src/pool.ts
