@@ -192,5 +192,4 @@ type PoolInitializer @entity {
   tokens: [InitializerToken!]! @derivedFrom(field: "poolInitializer")
   # Total amount of WETH users have been credited for
   totalCreditedWETH: BigInt!
-  dailySnapshots: [DailyPoolSnapshot!]! @derivedFrom(field: "pool")
 }
