@@ -78,9 +78,9 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: DelegateVotesChanged(indexed address,uint256,uint256)
-          handler:
+          handler: handleDelegateVoteChange
         - event: DelegateChanged(indexed address,indexed address,indexed address)
-          handler:
+          handler: handleDelegateChanged
       file: ./src/token-mapping.ts
 templates:
   - name: BPool
