@@ -9,7 +9,7 @@ export function handleDelegateChanged(event: DelegateChanged): void {
   let timestamp = event.block.timestamp.toI32();
   let snapshot = initialiseSnapshot(timestamp);
   let contract = Ndx.bind(event.address);
-  let votes = contract.getPriorVotes(event.params.delegator, event.block.number);
+  let votes = contract.getPriorVotes(event.params.delegator, event.block.number.minus(BigInt.fromI32(1)));
 
   if(event.params.toDelegate != event.params.delegator){
     snapshot.delegated = snapshot.delegated.plus(votes);

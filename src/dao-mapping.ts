@@ -1,28 +1,21 @@
 import { ProposalCreated, ProposalQueued, ProposalCanceled, ProposalExecuted, VoteCast } from '../generated/GovernorAlpha/GovernorAlpha';
 import { Proposal, Vote } from '../generated/schema';
-import { BigInt, Bytes } from '@graphprotocol/graph-ts';
-
-enum State {
-  Active,
-  Cancelled,
-  Rejected,
-  Accepted,
-  Queued,
-  Executed
-}
+import { BigInt, Bytes, Address } from '@graphprotocol/graph-ts';
 
 export function createProposal(event: ProposalCreated): void {
   let proposal = new Proposal(event.params.id.toHexString());
 
   proposal.proposer = event.transaction.from;
-  proposal.signatures = event.params.signatures as Array<Bytes>;
-  proposal.calldatas = event.params.calldatas as Array<Bytes>;
-  proposal.values = event.params.values as Array<Bytes>;
   proposal.targets = event.params.targets as Array<Bytes>;
+  proposal.calldatas = event.params.calldatas as Array<Bytes>;
+  proposal.signatures = event.params.signatures as Array<String>;
+  proposal.values = event.params.values as Array<BigInt>;
   proposal.expiry = event.params.endBlock.toI32();
+  proposal.votes = new Array<String>();
   proposal.against = BigInt.fromI32(0);
   proposal.for = BigInt.fromI32(0);
-  proposal.state = State.Active as String
+  proposal.state = "0";
+
   proposal.save();
 }
 
@@ -46,21 +39,21 @@ export function handleVote(event: VoteCast): void {
 }
 
 export function cancelProposal(event: ProposalCanceled): void {
-  manageProposal(event.params.id.toHexString(), event.transaction.hash, State.Cancelled);
+  manageProposal(event.params.id.toHexString(), event.transaction.hash, "1");
 }
 
 export function queueProposal(event: ProposalQueued): void {
-  manageProposal(event.params.id.toHexString(), event.transaction.hash, State.Queued);
+  manageProposal(event.params.id.toHexString(), event.transaction.hash, "2");
 }
 
-export function executeProposal(event: ProposalCanceled): void {
-  manageProposal(event.params.id.toHexString(), event.transaction.hash, State.Executed);
+export function executeProposal(event: ProposalExecuted): void {
+  manageProposal(event.params.id.toHexString(), event.transaction.hash, "3");
 }
 
-function manageProposal(id: string, transactionHash: Bytes, state: State): void {
+function manageProposal(id: string, transactionHash: Bytes, state: String): void {
   let proposal = Proposal.load(id);
 
   proposal.action = transactionHash;
-  proposal.state = state as String;
+  proposal.state = state;
   proposal.save();
 }
