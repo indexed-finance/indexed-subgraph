@@ -5,7 +5,7 @@ import { BigInt, Bytes } from '@graphprotocol/graph-ts';
 export function createProposal(event: ProposalCreated) {
   let address = event.transaction.from.toHexString();
   let proposal = new Proposal(event.params.id);
-  
+
   proposal.against = event.params.againstVotes;
   proposal.signatures = event.params.signatures;
   proposal.calldatas = event.params.calldatas;
@@ -16,6 +16,26 @@ export function createProposal(event: ProposalCreated) {
   proposal.state = State.Active;
   proposal.proposer = address;
   proposal.save();
+}
+
+export function vote(event: VoteCast) {
+  let proposal = Proposal.load(event.params.proposalId);
+  let address = event.transaction.from.toHexString();
+  let vote = new Vote(event.transaction.hash.toHex());
+
+  vote.weight = event.params.votes
+  vote.option = event.params.support
+  vote.voter = address
+  vote.save()
+
+  if(!event.params.support){
+    proposal.against = event.params.votes.add(proposal.against)
+  } else {
+    proposal.for = event.params.votes.add(proposal.for)
+  }
+
+  proposal.votes.push(vote)
+  proposal.save()
 }
 
 export function cancelProposal(event: ProposalCanceled) {

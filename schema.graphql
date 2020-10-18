@@ -15,7 +15,7 @@ type Category @entity {
 }
 
 type Proposal @entity {
-  # id = ipfsHash
+  # id = proposalCount
   id: ID!
   state: State!
   proposer: Bytes!
