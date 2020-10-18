@@ -40,14 +40,7 @@ dataSources:
           handler: handleTokenAdded
         - event: CategorySorted(uint256)
           handler: handleCategorySorted
-      file: ./src/controller-mapping.ts
-templates:
-  - name: UnboundTokenSeller
-    kind: ethereum/contract
-    network: rinkeby
-    source:
-      abi: UnboundTokenSeller
-      file: ./src/oracle-mapping.ts
+      file: ./src/controller.ts
   - kind: ethereum/contract
     name: GovernorAlpha
     network: rinkeby
@@ -60,27 +53,6 @@ templates:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - IndexPool
-        - InitializerToken
-        - DailyPoolSnapshot
-        - Token
-        - TokenForSale
-      abis:
-        - name: UnboundTokenSeller
-          file: ./abis/UnboundTokenSeller.json
-      eventHandlers:
-        - event: PremiumPercentSet(uint8)
-          handler: handlePremiumSet
-        - event: NewTokensToSell(indexed address,uint256)
-          handler: handleNewTokensToSell
-        - event: SwappedTokens(indexed address,indexed address,uint256,uint256)
-          handler: handleTokenSwap
-      file: ./src/token-seller-mapping.ts
-  - name: PoolInitializer
-    kind: ethereum/contract
-    network: rinkeby
-    source:
-      abi: PoolInitializer
         - Proposal
         - Vote
       abis:
@@ -110,20 +82,6 @@ templates:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - IndexPool
-        - InitializerToken
-        - DailyPoolSnapshot
-        - Token
-        - PoolInitializer
-        - TokenContribution
-      abis:
-        - name: PoolInitializer
-          file: ./abis/PoolInitializer.json
-      eventHandlers:
-        - event: TokensContributed(address,address,uint256,uint256)
-          handler: handleTokensContributed
-      file: ./src/initializer-mapping.ts
-  - name: IPool
         - DailyDistributionSnapshot
       abis:
         - name: Ndx
@@ -137,7 +95,56 @@ templates:
           handler: handleDelegateChanged
       file: ./src/token-mapping.ts
 templates:
-  - name: BPool
+  - name: UnboundTokenSeller
+    kind: ethereum/contract
+    network: rinkeby
+    source:
+      abi: UnboundTokenSeller
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - IndexPool
+        - InitializerToken
+        - DailyPoolSnapshot
+        - Token
+        - TokenForSale
+      abis:
+        - name: UnboundTokenSeller
+          file: ./abis/UnboundTokenSeller.json
+      eventHandlers:
+        - event: PremiumPercentSet(uint8)
+          handler: handlePremiumSet
+        - event: NewTokensToSell(indexed address,uint256)
+          handler: handleNewTokensToSell
+        - event: SwappedTokens(indexed address,indexed address,uint256,uint256)
+          handler: handleTokenSwap
+      file: ./src/token-seller.ts
+  - name: PoolInitializer
+    kind: ethereum/contract
+    network: rinkeby
+    source:
+      abi: PoolInitializer
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - IndexPool
+        - InitializerToken
+        - DailyPoolSnapshot
+        - Token
+        - PoolInitializer
+        - TokenContribution
+      abis:
+        - name: PoolInitializer
+          file: ./abis/PoolInitializer.json
+      eventHandlers:
+        - event: TokensContributed(address,address,uint256,uint256)
+          handler: handleTokensContributed
+      file: ./src/initializer.ts
+  - name: IPool
     kind: ethereum/contract
     network: rinkeby
     source:
@@ -179,4 +186,4 @@ templates:
           handler: handleSwapFeeUpdated
         - event: LOG_MAX_TOKENS_UPDATED(uint256)
           handler: handleMaxTokensUpdated
-      file: ./src/pool-mapping.ts
+      file: ./src/pool.ts
