@@ -1,30 +1,19 @@
-import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, BPool, LOG_TOKEN_REMOVED, LOG_TOKEN_ADDED, LOG_TOKEN_READY } from "../generated/templates/BPool/BPool";
-import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool } from "../generated/schema";
-import { Address, ethereum, BigInt } from "@graphprotocol/graph-ts";
+import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, IPool, LOG_TOKEN_REMOVED, LOG_TOKEN_ADDED, LOG_TOKEN_READY } from "../generated/templates/IPool/IPool";
+import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool, Swap } from "../generated/schema";
+import { Address, ethereum, BigInt, Bytes, BigDecimal } from "@graphprotocol/graph-ts";
+import { LOG_MAX_TOKENS_UPDATED, LOG_MINIMUM_BALANCE_UPDATED, LOG_SWAP_FEE_UPDATED } from "../generated/templates/IPool/IPool";
+import { hexToDecimal, joinHyphen } from "./helpers";
 
-function joinHyphen(a: Address, b: Address): string {
-  return a.toHexString().concat('-').concat(b.toHexString());
-}
-
-function loadUnderlyingToken(
-  poolAddress: Address,
-  tokenAddress: Address
-): PoolUnderlyingToken {
-  let tokenID = joinHyphen(poolAddress, tokenAddress);
+function loadUnderlyingToken(poolAddress: Address, tokenAddress: Address): PoolUnderlyingToken {
+  let tokenID = joinHyphen([poolAddress.toHexString(), tokenAddress.toHexString()]);
   return PoolUnderlyingToken.load(tokenID) as PoolUnderlyingToken;
 }
 
-function indexPoolBalanceID(
-  poolAddress: Address,
-  ownerAddress: Address
-): string {
-  return `bal-`.concat(joinHyphen(poolAddress, ownerAddress));
+function indexPoolBalanceID(poolAddress: Address, ownerAddress: Address): string {
+  return joinHyphen(['bal', poolAddress.toHexString(), ownerAddress.toHexString()]);
 }
 
-function loadIndexPoolBalance(
-  poolAddress: Address,
-  ownerAddress: Address
-): IndexPoolBalance {
+function loadIndexPoolBalance(poolAddress: Address, ownerAddress: Address): IndexPoolBalance {
   let balanceID = indexPoolBalanceID(poolAddress, ownerAddress);
   let bal = IndexPoolBalance.load(balanceID);
   if (bal == null) {
@@ -55,7 +44,7 @@ function updateDailySnapshot(event: ethereum.Event): void {
   snapshot.denorms = [];
   snapshot.desiredDenorms = [];
 
-  let bpool = BPool.bind(event.address);
+  let bpool = IPool.bind(event.address);
   let tokens = bpool.getCurrentTokens();
   for (let i = 0; i < tokens.length; i++) {
     let token = tokens[i];
@@ -76,6 +65,19 @@ export function handleSwap(event: LOG_SWAP): void {
   tokenIn.save();
   tokenOut.save();
   updateDailySnapshot(event);
+  let swapID = joinHyphen([
+    event.transaction.hash.toHexString(),
+    event.logIndex.toHexString()
+  ]);
+  let swap = new Swap(swapID);
+  swap.caller = event.params.caller;
+  swap.tokenIn = event.params.tokenIn;
+  swap.tokenOut = event.params.tokenOut;
+  swap.tokenAmountIn = event.params.tokenAmountIn;
+  swap.tokenAmountOut = event.params.tokenAmountOut;
+  swap.pool = event.address.toHexString();
+  swap.timestamp = event.block.timestamp as u8;
+  swap.save();
 }
 
 export function handleJoin(event: LOG_JOIN): void {
@@ -147,8 +149,8 @@ export function handleTokenRemoved(event: LOG_TOKEN_REMOVED): void {
 }
 
 export function handleTokenAdded(event: LOG_TOKEN_ADDED): void {
-  let tokenID = joinHyphen(event.address, event.params.token);
-  let token = new PoolUnderlyingToken(tokenID);
+  let tokenID = joinHyphen([event.address.toHexString(), event.params.token.toHexString()]);
+  let token = new PoolUnderlyingToken(tokenID as string);
   token.token = event.params.token.toHexString();
   token.ready = false;
   token.minimumBalance = event.params.minimumBalance;
@@ -164,4 +166,23 @@ export function handleTokenReady(event: LOG_TOKEN_READY): void {
   token.ready = true;
   token.minimumBalance = null;
   token.save();
+}
+
+export function handleUpdateMinimumBalance(event: LOG_MINIMUM_BALANCE_UPDATED): void {
+  let token = loadUnderlyingToken(event.address, event.params.token);
+  token.minimumBalance = event.params.minimumBalance;
+  token.save();
+}
+
+export function handleMaxTokensUpdated(event: LOG_MAX_TOKENS_UPDATED): void {
+  let pool = IndexPool.load(event.address.toHexString());
+  pool.maxTotalSupply = event.params.maxPoolTokens;
+  pool.save();
+}
+
+export function handleSwapFeeUpdated(event: LOG_SWAP_FEE_UPDATED): void {
+  let pool = IndexPool.load(event.address.toHexString());
+  let swapFee = hexToDecimal(event.params.swapFee.toHexString(), 18);
+  pool.swapFee = swapFee;
+  pool.save();
 }
