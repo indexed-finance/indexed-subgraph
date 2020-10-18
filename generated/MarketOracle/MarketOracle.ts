@@ -143,48 +143,6 @@ export class MarketOracle extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
-  MAX_CATEGORY_TOKENS(): BigInt {
-    let result = super.call(
-      "MAX_CATEGORY_TOKENS",
-      "MAX_CATEGORY_TOKENS():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_CATEGORY_TOKENS(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MAX_CATEGORY_TOKENS",
-      "MAX_CATEGORY_TOKENS():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_SORT_DELAY(): BigInt {
-    let result = super.call("MAX_SORT_DELAY", "MAX_SORT_DELAY():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_SORT_DELAY(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MAX_SORT_DELAY",
-      "MAX_SORT_DELAY():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   MIN_UPDATE_PERIOD(): BigInt {
     let result = super.call(
       "MIN_UPDATE_PERIOD",
@@ -206,6 +164,29 @@ export class MarketOracle extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  canUpdatePrice(token: Address): boolean {
+    let result = super.call(
+      "canUpdatePrice",
+      "canUpdatePrice(address):(bool)",
+      [ethereum.Value.fromAddress(token)]
+    );
+
+    return result[0].toBoolean();
+  }
+
+  try_canUpdatePrice(token: Address): ethereum.CallResult<boolean> {
+    let result = super.tryCall(
+      "canUpdatePrice",
+      "canUpdatePrice(address):(bool)",
+      [ethereum.Value.fromAddress(token)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
   categoryIndex(): BigInt {
@@ -396,6 +377,107 @@ export class MarketOracle extends ethereum.SmartContract {
     );
   }
 
+  getCategoryMarketCaps(categoryID: BigInt): Array<BigInt> {
+    let result = super.call(
+      "getCategoryMarketCaps",
+      "getCategoryMarketCaps(uint256):(uint144[])",
+      [ethereum.Value.fromUnsignedBigInt(categoryID)]
+    );
+
+    return result[0].toBigIntArray();
+  }
+
+  try_getCategoryMarketCaps(
+    categoryID: BigInt
+  ): ethereum.CallResult<Array<BigInt>> {
+    let result = super.tryCall(
+      "getCategoryMarketCaps",
+      "getCategoryMarketCaps(uint256):(uint144[])",
+      [ethereum.Value.fromUnsignedBigInt(categoryID)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigIntArray());
+  }
+
+  getCategoryTokens(categoryID: BigInt): Array<Address> {
+    let result = super.call(
+      "getCategoryTokens",
+      "getCategoryTokens(uint256):(address[])",
+      [ethereum.Value.fromUnsignedBigInt(categoryID)]
+    );
+
+    return result[0].toAddressArray();
+  }
+
+  try_getCategoryTokens(
+    categoryID: BigInt
+  ): ethereum.CallResult<Array<Address>> {
+    let result = super.tryCall(
+      "getCategoryTokens",
+      "getCategoryTokens(uint256):(address[])",
+      [ethereum.Value.fromUnsignedBigInt(categoryID)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddressArray());
+  }
+
+  getTopCategoryTokens(categoryID: BigInt, num: BigInt): Array<Address> {
+    let result = super.call(
+      "getTopCategoryTokens",
+      "getTopCategoryTokens(uint256,uint256):(address[])",
+      [
+        ethereum.Value.fromUnsignedBigInt(categoryID),
+        ethereum.Value.fromUnsignedBigInt(num)
+      ]
+    );
+
+    return result[0].toAddressArray();
+  }
+
+  try_getTopCategoryTokens(
+    categoryID: BigInt,
+    num: BigInt
+  ): ethereum.CallResult<Array<Address>> {
+    let result = super.tryCall(
+      "getTopCategoryTokens",
+      "getTopCategoryTokens(uint256,uint256):(address[])",
+      [
+        ethereum.Value.fromUnsignedBigInt(categoryID),
+        ethereum.Value.fromUnsignedBigInt(num)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddressArray());
+  }
+
+  hasCategory(categoryID: BigInt): boolean {
+    let result = super.call("hasCategory", "hasCategory(uint256):(bool)", [
+      ethereum.Value.fromUnsignedBigInt(categoryID)
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_hasCategory(categoryID: BigInt): ethereum.CallResult<boolean> {
+    let result = super.tryCall("hasCategory", "hasCategory(uint256):(bool)", [
+      ethereum.Value.fromUnsignedBigInt(categoryID)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
   lastCategoryUpdate(param0: BigInt): BigInt {
     let result = super.call(
       "lastCategoryUpdate",
@@ -467,21 +549,6 @@ export class MarketOracle extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  stableCoin(): Address {
-    let result = super.call("stableCoin", "stableCoin():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_stableCoin(): ethereum.CallResult<Address> {
-    let result = super.tryCall("stableCoin", "stableCoin():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   uniswapFactory(): Address {
     let result = super.call("uniswapFactory", "uniswapFactory():(address)", []);
 
@@ -501,105 +568,19 @@ export class MarketOracle extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  hasCategory(categoryID: BigInt): boolean {
-    let result = super.call("hasCategory", "hasCategory(uint256):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(categoryID)
-    ]);
+  weth(): Address {
+    let result = super.call("weth", "weth():(address)", []);
 
-    return result[0].toBoolean();
+    return result[0].toAddress();
   }
 
-  try_hasCategory(categoryID: BigInt): ethereum.CallResult<boolean> {
-    let result = super.tryCall("hasCategory", "hasCategory(uint256):(bool)", [
-      ethereum.Value.fromUnsignedBigInt(categoryID)
-    ]);
+  try_weth(): ethereum.CallResult<Address> {
+    let result = super.tryCall("weth", "weth():(address)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
-  getCategoryTokens(categoryID: BigInt): Array<Address> {
-    let result = super.call(
-      "getCategoryTokens",
-      "getCategoryTokens(uint256):(address[])",
-      [ethereum.Value.fromUnsignedBigInt(categoryID)]
-    );
-
-    return result[0].toAddressArray();
-  }
-
-  try_getCategoryTokens(
-    categoryID: BigInt
-  ): ethereum.CallResult<Array<Address>> {
-    let result = super.tryCall(
-      "getCategoryTokens",
-      "getCategoryTokens(uint256):(address[])",
-      [ethereum.Value.fromUnsignedBigInt(categoryID)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddressArray());
-  }
-
-  getCategoryMarketCaps(categoryID: BigInt): Array<BigInt> {
-    let result = super.call(
-      "getCategoryMarketCaps",
-      "getCategoryMarketCaps(uint256):(uint144[])",
-      [ethereum.Value.fromUnsignedBigInt(categoryID)]
-    );
-
-    return result[0].toBigIntArray();
-  }
-
-  try_getCategoryMarketCaps(
-    categoryID: BigInt
-  ): ethereum.CallResult<Array<BigInt>> {
-    let result = super.tryCall(
-      "getCategoryMarketCaps",
-      "getCategoryMarketCaps(uint256):(uint144[])",
-      [ethereum.Value.fromUnsignedBigInt(categoryID)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigIntArray());
-  }
-
-  getTopCategoryTokens(categoryID: BigInt, num: BigInt): Array<Address> {
-    let result = super.call(
-      "getTopCategoryTokens",
-      "getTopCategoryTokens(uint256,uint256):(address[])",
-      [
-        ethereum.Value.fromUnsignedBigInt(categoryID),
-        ethereum.Value.fromUnsignedBigInt(num)
-      ]
-    );
-
-    return result[0].toAddressArray();
-  }
-
-  try_getTopCategoryTokens(
-    categoryID: BigInt,
-    num: BigInt
-  ): ethereum.CallResult<Array<Address>> {
-    let result = super.tryCall(
-      "getTopCategoryTokens",
-      "getTopCategoryTokens(uint256,uint256):(address[])",
-      [
-        ethereum.Value.fromUnsignedBigInt(categoryID),
-        ethereum.Value.fromUnsignedBigInt(num)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddressArray());
+    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 }
 
@@ -624,7 +605,7 @@ export class ConstructorCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get _stableCoin(): Address {
+  get _weth(): Address {
     return this._call.inputValues[1].value.toAddress();
   }
 
@@ -637,96 +618,6 @@ export class ConstructorCall__Outputs {
   _call: ConstructorCall;
 
   constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-}
-
-export class UpdatePriceCall extends ethereum.Call {
-  get inputs(): UpdatePriceCall__Inputs {
-    return new UpdatePriceCall__Inputs(this);
-  }
-
-  get outputs(): UpdatePriceCall__Outputs {
-    return new UpdatePriceCall__Outputs(this);
-  }
-}
-
-export class UpdatePriceCall__Inputs {
-  _call: UpdatePriceCall;
-
-  constructor(call: UpdatePriceCall) {
-    this._call = call;
-  }
-
-  get token(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class UpdatePriceCall__Outputs {
-  _call: UpdatePriceCall;
-
-  constructor(call: UpdatePriceCall) {
-    this._call = call;
-  }
-}
-
-export class UpdatePricesCall extends ethereum.Call {
-  get inputs(): UpdatePricesCall__Inputs {
-    return new UpdatePricesCall__Inputs(this);
-  }
-
-  get outputs(): UpdatePricesCall__Outputs {
-    return new UpdatePricesCall__Outputs(this);
-  }
-}
-
-export class UpdatePricesCall__Inputs {
-  _call: UpdatePricesCall;
-
-  constructor(call: UpdatePricesCall) {
-    this._call = call;
-  }
-
-  get tokens(): Array<Address> {
-    return this._call.inputValues[0].value.toAddressArray();
-  }
-}
-
-export class UpdatePricesCall__Outputs {
-  _call: UpdatePricesCall;
-
-  constructor(call: UpdatePricesCall) {
-    this._call = call;
-  }
-}
-
-export class CreateCategoryCall extends ethereum.Call {
-  get inputs(): CreateCategoryCall__Inputs {
-    return new CreateCategoryCall__Inputs(this);
-  }
-
-  get outputs(): CreateCategoryCall__Outputs {
-    return new CreateCategoryCall__Outputs(this);
-  }
-}
-
-export class CreateCategoryCall__Inputs {
-  _call: CreateCategoryCall;
-
-  constructor(call: CreateCategoryCall) {
-    this._call = call;
-  }
-
-  get metadataHash(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
-  }
-}
-
-export class CreateCategoryCall__Outputs {
-  _call: CreateCategoryCall;
-
-  constructor(call: CreateCategoryCall) {
     this._call = call;
   }
 }
@@ -807,6 +698,36 @@ export class AddTokensCallUpdatesStruct extends ethereum.Tuple {
   }
 }
 
+export class CreateCategoryCall extends ethereum.Call {
+  get inputs(): CreateCategoryCall__Inputs {
+    return new CreateCategoryCall__Inputs(this);
+  }
+
+  get outputs(): CreateCategoryCall__Outputs {
+    return new CreateCategoryCall__Outputs(this);
+  }
+}
+
+export class CreateCategoryCall__Inputs {
+  _call: CreateCategoryCall;
+
+  constructor(call: CreateCategoryCall) {
+    this._call = call;
+  }
+
+  get metadataHash(): Bytes {
+    return this._call.inputValues[0].value.toBytes();
+  }
+}
+
+export class CreateCategoryCall__Outputs {
+  _call: CreateCategoryCall;
+
+  constructor(call: CreateCategoryCall) {
+    this._call = call;
+  }
+}
+
 export class OrderCategoryTokensByMarketCapCall extends ethereum.Call {
   get inputs(): OrderCategoryTokensByMarketCapCall__Inputs {
     return new OrderCategoryTokensByMarketCapCall__Inputs(this);
@@ -837,6 +758,66 @@ export class OrderCategoryTokensByMarketCapCall__Outputs {
   _call: OrderCategoryTokensByMarketCapCall;
 
   constructor(call: OrderCategoryTokensByMarketCapCall) {
+    this._call = call;
+  }
+}
+
+export class UpdatePriceCall extends ethereum.Call {
+  get inputs(): UpdatePriceCall__Inputs {
+    return new UpdatePriceCall__Inputs(this);
+  }
+
+  get outputs(): UpdatePriceCall__Outputs {
+    return new UpdatePriceCall__Outputs(this);
+  }
+}
+
+export class UpdatePriceCall__Inputs {
+  _call: UpdatePriceCall;
+
+  constructor(call: UpdatePriceCall) {
+    this._call = call;
+  }
+
+  get token(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdatePriceCall__Outputs {
+  _call: UpdatePriceCall;
+
+  constructor(call: UpdatePriceCall) {
+    this._call = call;
+  }
+}
+
+export class UpdatePricesCall extends ethereum.Call {
+  get inputs(): UpdatePricesCall__Inputs {
+    return new UpdatePricesCall__Inputs(this);
+  }
+
+  get outputs(): UpdatePricesCall__Outputs {
+    return new UpdatePricesCall__Outputs(this);
+  }
+}
+
+export class UpdatePricesCall__Inputs {
+  _call: UpdatePricesCall;
+
+  constructor(call: UpdatePricesCall) {
+    this._call = call;
+  }
+
+  get tokens(): Array<Address> {
+    return this._call.inputValues[0].value.toAddressArray();
+  }
+}
+
+export class UpdatePricesCall__Outputs {
+  _call: UpdatePricesCall;
+
+  constructor(call: UpdatePricesCall) {
     this._call = call;
   }
 }

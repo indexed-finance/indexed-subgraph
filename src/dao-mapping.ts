@@ -1,59 +1,66 @@
-import { ProposalCreated, ProposalQueued, ProposalCanceled, ProposalExecuted } from '../generated/GovernorAlpha/GovernorAlpha';
-import { Proposal, Vote, State } from '../generated/schema';
+import { ProposalCreated, ProposalQueued, ProposalCanceled, ProposalExecuted, VoteCast } from '../generated/GovernorAlpha/GovernorAlpha';
+import { Proposal, Vote } from '../generated/schema';
 import { BigInt, Bytes } from '@graphprotocol/graph-ts';
 
-export function createProposal(event: ProposalCreated) {
-  let address = event.transaction.from.toHexString();
-  let proposal = new Proposal(event.params.id);
+enum State {
+  Active,
+  Cancelled,
+  Rejected,
+  Accepted,
+  Queued,
+  Executed
+}
 
-  proposal.against = event.params.againstVotes;
-  proposal.signatures = event.params.signatures;
-  proposal.calldatas = event.params.calldatas;
-  proposal.targets = event.params.targets;
-  propsoal.expiry = event.params.endBlock;
-  proposal.values = event.params.values;
-  proposal.for = event.params.forVotes;
-  proposal.state = State.Active;
-  proposal.proposer = address;
+export function createProposal(event: ProposalCreated): void {
+  let proposal = new Proposal(event.params.id.toHexString());
+
+  proposal.proposer = event.transaction.from;
+  proposal.signatures = event.params.signatures as Array<Bytes>;
+  proposal.calldatas = event.params.calldatas as Array<Bytes>;
+  proposal.values = event.params.values as Array<Bytes>;
+  proposal.targets = event.params.targets as Array<Bytes>;
+  proposal.expiry = event.params.endBlock.toI32();
+  proposal.against = BigInt.fromI32(0);
+  proposal.for = BigInt.fromI32(0);
+  proposal.state = State.Active as String
   proposal.save();
 }
 
-export function handleVote(event: VoteCast) {
-  let proposal = Proposal.load(event.params.proposalId);
-  let address = event.transaction.from.toHexString();
+export function handleVote(event: VoteCast): void {
+  let proposal = Proposal.load(event.params.proposalId.toHexString());
   let vote = new Vote(event.transaction.hash.toHex());
 
-  vote.weight = event.params.votes
-  vote.option = event.params.support
-  vote.voter = address
-  vote.save()
+  vote.weight = event.params.votes;
+  vote.option = event.params.support;
+  vote.voter = event.transaction.from;
+  vote.save();
 
   if(!event.params.support){
-    proposal.against = event.params.votes.add(proposal.against)
+    proposal.against = event.params.votes.plus(proposal.against);
   } else {
-    proposal.for = event.params.votes.add(proposal.for)
+    proposal.for = event.params.votes.minus(proposal.for);
   }
 
-  proposal.votes.push(vote)
-  proposal.save()
+  proposal.votes.push(vote.id);
+  proposal.save();
 }
 
-export function cancelProposal(event: ProposalCanceled) {
-  manageProposal(event.params.id, event.transaction.hash.toHex(), State.Cancelled)
+export function cancelProposal(event: ProposalCanceled): void {
+  manageProposal(event.params.id.toHexString(), event.transaction.hash, State.Cancelled);
 }
 
-export function queueProposal(event: ProposalQueued) {
-  manageProposal(event.params.id, event.transaction.hash.toHex(), State.Queued)
+export function queueProposal(event: ProposalQueued): void {
+  manageProposal(event.params.id.toHexString(), event.transaction.hash, State.Queued);
 }
 
-export function executeProposal(event: ProposalCanceled) {
-  manageProposal(event.params.id, event.transaction.hash.toHex(), State.Executed)
+export function executeProposal(event: ProposalCanceled): void {
+  manageProposal(event.params.id.toHexString(), event.transaction.hash, State.Executed);
 }
 
-function manageProposal(id: string, transactionHash: Bytes, state: State) {
-  let proposal = Proposal.load(id)
+function manageProposal(id: string, transactionHash: Bytes, state: State): void {
+  let proposal = Proposal.load(id);
 
-  proposal.action = transactionHash
-  proposal.state = state
-  proposal.save()
+  proposal.action = transactionHash;
+  proposal.state = state as String;
+  proposal.save();
 }

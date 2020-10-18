@@ -36,32 +36,6 @@ export class Approval__Params {
   }
 }
 
-export class LOG_CALL extends ethereum.Event {
-  get params(): LOG_CALL__Params {
-    return new LOG_CALL__Params(this);
-  }
-}
-
-export class LOG_CALL__Params {
-  _event: LOG_CALL;
-
-  constructor(event: LOG_CALL) {
-    this._event = event;
-  }
-
-  get sig(): Bytes {
-    return this._event.parameters[0].value.toBytes();
-  }
-
-  get caller(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get data(): Bytes {
-    return this._event.parameters[2].value.toBytes();
-  }
-}
-
 export class LOG_DENORM_UPDATED extends ethereum.Event {
   get params(): LOG_DENORM_UPDATED__Params {
     return new LOG_DENORM_UPDATED__Params(this);
@@ -192,6 +166,68 @@ export class LOG_SWAP__Params {
   }
 }
 
+export class LOG_TOKEN_ADDED extends ethereum.Event {
+  get params(): LOG_TOKEN_ADDED__Params {
+    return new LOG_TOKEN_ADDED__Params(this);
+  }
+}
+
+export class LOG_TOKEN_ADDED__Params {
+  _event: LOG_TOKEN_ADDED;
+
+  constructor(event: LOG_TOKEN_ADDED) {
+    this._event = event;
+  }
+
+  get token(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get desiredDenorm(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get minimumBalance(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class LOG_TOKEN_READY extends ethereum.Event {
+  get params(): LOG_TOKEN_READY__Params {
+    return new LOG_TOKEN_READY__Params(this);
+  }
+}
+
+export class LOG_TOKEN_READY__Params {
+  _event: LOG_TOKEN_READY;
+
+  constructor(event: LOG_TOKEN_READY) {
+    this._event = event;
+  }
+
+  get token(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
+export class LOG_TOKEN_REMOVED extends ethereum.Event {
+  get params(): LOG_TOKEN_REMOVED__Params {
+    return new LOG_TOKEN_REMOVED__Params(this);
+  }
+}
+
+export class LOG_TOKEN_REMOVED__Params {
+  _event: LOG_TOKEN_REMOVED;
+
+  constructor(event: LOG_TOKEN_REMOVED) {
+    this._event = event;
+  }
+
+  get token(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
 export class Transfer extends ethereum.Event {
   get params(): Transfer__Params {
     return new Transfer__Params(this);
@@ -218,29 +254,50 @@ export class Transfer__Params {
   }
 }
 
+export class BPool__getPoolValueByTokenIndexResult {
+  value0: Address;
+  value1: BigInt;
+
+  constructor(value0: Address, value1: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromAddress(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    return map;
+  }
+}
+
 export class BPool__getTokenRecordResultRecordStruct extends ethereum.Tuple {
   get bound(): boolean {
     return this[0].toBoolean();
   }
 
-  get lastDenormUpdate(): BigInt {
-    return this[1].toBigInt();
+  get ready(): boolean {
+    return this[1].toBoolean();
   }
 
-  get denorm(): BigInt {
+  get lastDenormUpdate(): BigInt {
     return this[2].toBigInt();
   }
 
-  get desiredDenorm(): BigInt {
+  get denorm(): BigInt {
     return this[3].toBigInt();
   }
 
+  get desiredDenorm(): BigInt {
+    return this[4].toBigInt();
+  }
+
   get index(): i32 {
-    return this[4].toI32();
+    return this[5].toI32();
   }
 
   get balance(): BigInt {
-    return this[5].toBigInt();
+    return this[6].toBigInt();
   }
 }
 
@@ -283,331 +340,16 @@ export class BPool extends ethereum.SmartContract {
     return new BPool("BPool", address);
   }
 
-  BONE(): BigInt {
-    let result = super.call("BONE", "BONE():(uint256)", []);
+  VERSION_NUMBER(): BigInt {
+    let result = super.call("VERSION_NUMBER", "VERSION_NUMBER():(uint256)", []);
 
     return result[0].toBigInt();
   }
 
-  try_BONE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("BONE", "BONE():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  BPOW_PRECISION(): BigInt {
-    let result = super.call("BPOW_PRECISION", "BPOW_PRECISION():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_BPOW_PRECISION(): ethereum.CallResult<BigInt> {
+  try_VERSION_NUMBER(): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "BPOW_PRECISION",
-      "BPOW_PRECISION():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  EXIT_FEE(): BigInt {
-    let result = super.call("EXIT_FEE", "EXIT_FEE():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_EXIT_FEE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("EXIT_FEE", "EXIT_FEE():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  INIT_POOL_SUPPLY(): BigInt {
-    let result = super.call(
-      "INIT_POOL_SUPPLY",
-      "INIT_POOL_SUPPLY():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_INIT_POOL_SUPPLY(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "INIT_POOL_SUPPLY",
-      "INIT_POOL_SUPPLY():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_BOUND_TOKENS(): BigInt {
-    let result = super.call(
-      "MAX_BOUND_TOKENS",
-      "MAX_BOUND_TOKENS():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_BOUND_TOKENS(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MAX_BOUND_TOKENS",
-      "MAX_BOUND_TOKENS():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_BPOW_BASE(): BigInt {
-    let result = super.call("MAX_BPOW_BASE", "MAX_BPOW_BASE():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_BPOW_BASE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MAX_BPOW_BASE",
-      "MAX_BPOW_BASE():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_FEE(): BigInt {
-    let result = super.call("MAX_FEE", "MAX_FEE():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_FEE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("MAX_FEE", "MAX_FEE():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_IN_RATIO(): BigInt {
-    let result = super.call("MAX_IN_RATIO", "MAX_IN_RATIO():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_IN_RATIO(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("MAX_IN_RATIO", "MAX_IN_RATIO():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_OUT_RATIO(): BigInt {
-    let result = super.call("MAX_OUT_RATIO", "MAX_OUT_RATIO():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_OUT_RATIO(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MAX_OUT_RATIO",
-      "MAX_OUT_RATIO():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_TOTAL_WEIGHT(): BigInt {
-    let result = super.call(
-      "MAX_TOTAL_WEIGHT",
-      "MAX_TOTAL_WEIGHT():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_TOTAL_WEIGHT(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MAX_TOTAL_WEIGHT",
-      "MAX_TOTAL_WEIGHT():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_WEIGHT(): BigInt {
-    let result = super.call("MAX_WEIGHT", "MAX_WEIGHT():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_WEIGHT(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("MAX_WEIGHT", "MAX_WEIGHT():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MAX_WEIGHT_CHANGE(): BigInt {
-    let result = super.call(
-      "MAX_WEIGHT_CHANGE",
-      "MAX_WEIGHT_CHANGE():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_WEIGHT_CHANGE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MAX_WEIGHT_CHANGE",
-      "MAX_WEIGHT_CHANGE():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MIN_BALANCE(): BigInt {
-    let result = super.call("MIN_BALANCE", "MIN_BALANCE():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MIN_BALANCE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("MIN_BALANCE", "MIN_BALANCE():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MIN_BOUND_TOKENS(): BigInt {
-    let result = super.call(
-      "MIN_BOUND_TOKENS",
-      "MIN_BOUND_TOKENS():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_MIN_BOUND_TOKENS(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MIN_BOUND_TOKENS",
-      "MIN_BOUND_TOKENS():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MIN_BPOW_BASE(): BigInt {
-    let result = super.call("MIN_BPOW_BASE", "MIN_BPOW_BASE():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MIN_BPOW_BASE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MIN_BPOW_BASE",
-      "MIN_BPOW_BASE():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MIN_FEE(): BigInt {
-    let result = super.call("MIN_FEE", "MIN_FEE():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MIN_FEE(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("MIN_FEE", "MIN_FEE():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MIN_WEIGHT(): BigInt {
-    let result = super.call("MIN_WEIGHT", "MIN_WEIGHT():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MIN_WEIGHT(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("MIN_WEIGHT", "MIN_WEIGHT():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  MIN_WEIGHT_DELAY(): BigInt {
-    let result = super.call(
-      "MIN_WEIGHT_DELAY",
-      "MIN_WEIGHT_DELAY():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_MIN_WEIGHT_DELAY(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "MIN_WEIGHT_DELAY",
-      "MIN_WEIGHT_DELAY():(uint256)",
+      "VERSION_NUMBER",
+      "VERSION_NUMBER():(uint256)",
       []
     );
     if (result.reverted) {
@@ -1171,21 +913,6 @@ export class BPool extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getColor(): Bytes {
-    let result = super.call("getColor", "getColor():(bytes32)", []);
-
-    return result[0].toBytes();
-  }
-
-  try_getColor(): ethereum.CallResult<Bytes> {
-    let result = super.tryCall("getColor", "getColor():(bytes32)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBytes());
-  }
-
   getController(): Address {
     let result = super.call("getController", "getController():(address)", []);
 
@@ -1203,6 +930,29 @@ export class BPool extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  getCurrentDesiredTokens(): Array<Address> {
+    let result = super.call(
+      "getCurrentDesiredTokens",
+      "getCurrentDesiredTokens():(address[])",
+      []
+    );
+
+    return result[0].toAddressArray();
+  }
+
+  try_getCurrentDesiredTokens(): ethereum.CallResult<Array<Address>> {
+    let result = super.tryCall(
+      "getCurrentDesiredTokens",
+      "getCurrentDesiredTokens():(address[])",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddressArray());
   }
 
   getCurrentTokens(): Array<Address> {
@@ -1251,20 +1001,20 @@ export class BPool extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getNormalizedWeight(token: Address): BigInt {
+  getMinimumBalance(token: Address): BigInt {
     let result = super.call(
-      "getNormalizedWeight",
-      "getNormalizedWeight(address):(uint256)",
+      "getMinimumBalance",
+      "getMinimumBalance(address):(uint256)",
       [ethereum.Value.fromAddress(token)]
     );
 
     return result[0].toBigInt();
   }
 
-  try_getNormalizedWeight(token: Address): ethereum.CallResult<BigInt> {
+  try_getMinimumBalance(token: Address): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "getNormalizedWeight",
-      "getNormalizedWeight(address):(uint256)",
+      "getMinimumBalance",
+      "getMinimumBalance(address):(uint256)",
       [ethereum.Value.fromAddress(token)]
     );
     if (result.reverted) {
@@ -1287,6 +1037,41 @@ export class BPool extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getPoolValueByTokenIndex(
+    index: BigInt
+  ): BPool__getPoolValueByTokenIndexResult {
+    let result = super.call(
+      "getPoolValueByTokenIndex",
+      "getPoolValueByTokenIndex(uint256):(address,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(index)]
+    );
+
+    return new BPool__getPoolValueByTokenIndexResult(
+      result[0].toAddress(),
+      result[1].toBigInt()
+    );
+  }
+
+  try_getPoolValueByTokenIndex(
+    index: BigInt
+  ): ethereum.CallResult<BPool__getPoolValueByTokenIndexResult> {
+    let result = super.tryCall(
+      "getPoolValueByTokenIndex",
+      "getPoolValueByTokenIndex(uint256):(address,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(index)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new BPool__getPoolValueByTokenIndexResult(
+        value[0].toAddress(),
+        value[1].toBigInt()
+      )
+    );
   }
 
   getSpotPrice(tokenIn: Address, tokenOut: Address): BigInt {
@@ -1371,7 +1156,7 @@ export class BPool extends ethereum.SmartContract {
   getTokenRecord(token: Address): BPool__getTokenRecordResultRecordStruct {
     let result = super.call(
       "getTokenRecord",
-      "getTokenRecord(address):((bool,uint48,uint96,uint96,uint8,uint256))",
+      "getTokenRecord(address):((bool,bool,uint40,uint96,uint96,uint8,uint256))",
       [ethereum.Value.fromAddress(token)]
     );
 
@@ -1383,7 +1168,7 @@ export class BPool extends ethereum.SmartContract {
   ): ethereum.CallResult<BPool__getTokenRecordResultRecordStruct> {
     let result = super.tryCall(
       "getTokenRecord",
-      "getTokenRecord(address):((bool,uint48,uint96,uint96,uint8,uint256))",
+      "getTokenRecord(address):((bool,bool,uint40,uint96,uint96,uint8,uint256))",
       [ethereum.Value.fromAddress(token)]
     );
     if (result.reverted) {
@@ -1410,6 +1195,29 @@ export class BPool extends ethereum.SmartContract {
       "getTotalDenormalizedWeight",
       "getTotalDenormalizedWeight():(uint256)",
       []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getUsedBalance(token: Address): BigInt {
+    let result = super.call(
+      "getUsedBalance",
+      "getUsedBalance(address):(uint256)",
+      [ethereum.Value.fromAddress(token)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getUsedBalance(token: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getUsedBalance",
+      "getUsedBalance(address):(uint256)",
+      [ethereum.Value.fromAddress(token)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -2210,6 +2018,44 @@ export class JoinswapPoolAmountOutCall__Outputs {
 
   get tokenAmountIn(): BigInt {
     return this._call.outputValues[0].value.toBigInt();
+  }
+}
+
+export class ReindexTokensCall extends ethereum.Call {
+  get inputs(): ReindexTokensCall__Inputs {
+    return new ReindexTokensCall__Inputs(this);
+  }
+
+  get outputs(): ReindexTokensCall__Outputs {
+    return new ReindexTokensCall__Outputs(this);
+  }
+}
+
+export class ReindexTokensCall__Inputs {
+  _call: ReindexTokensCall;
+
+  constructor(call: ReindexTokensCall) {
+    this._call = call;
+  }
+
+  get tokens(): Array<Address> {
+    return this._call.inputValues[0].value.toAddressArray();
+  }
+
+  get desiredDenorms(): Array<BigInt> {
+    return this._call.inputValues[1].value.toBigIntArray();
+  }
+
+  get minimumBalances(): Array<BigInt> {
+    return this._call.inputValues[2].value.toBigIntArray();
+  }
+}
+
+export class ReindexTokensCall__Outputs {
+  _call: ReindexTokensCall;
+
+  constructor(call: ReindexTokensCall) {
+    this._call = call;
   }
 }
 

@@ -1,5 +1,5 @@
 specVersion: 0.0.2
-description: Indexed contracts on Rinkeby
+description: Indexed V1
 repository: https://github.com/indexed-finance/indexed-subgraph
 schema:
   file: ./schema.graphql
@@ -49,11 +49,11 @@ dataSources:
       eventHandlers:
         - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
           handler: createProposal
-        - event: VoteCast(indexed address,uint256,bool,uint256)
+        - event: VoteCast(address,uint256,bool,uint256)
           handler: handleVote
         - event: ProposalCanceled(uint256)
           handler: cancelProposal
-        - event: ProposalQueued(uint256, uint256)
+        - event: ProposalQueued(uint256,uint256)
           handler: queueProposal
         - event: ProposalExecuted(uint256)
           handler: executeProposal

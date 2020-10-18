@@ -23,7 +23,7 @@ type Proposal @entity {
   expiry: Int!
   for: BigInt!
   against: BigInt!
-  votes: [Votes!]
+  votes: [Vote!]
   targets: [Bytes!]!
   values: [Bytes!]!
   signatures: [Bytes!]!
@@ -34,7 +34,7 @@ type Vote @entity {
   # id = transactionHash
   id: ID!
   voter: Bytes!
-  option: Bool!
+  option: Boolean!
   weight: BigInt!
 }
 

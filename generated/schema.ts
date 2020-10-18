@@ -70,6 +70,274 @@ export class Category extends Entity {
   }
 }
 
+export class Proposal extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save Proposal entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save Proposal entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("Proposal", id.toString(), this);
+  }
+
+  static load(id: string): Proposal | null {
+    return store.get("Proposal", id) as Proposal | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get state(): string {
+    let value = this.get("state");
+    return value.toString();
+  }
+
+  set state(value: string) {
+    this.set("state", Value.fromString(value));
+  }
+
+  get proposer(): Bytes {
+    let value = this.get("proposer");
+    return value.toBytes();
+  }
+
+  set proposer(value: Bytes) {
+    this.set("proposer", Value.fromBytes(value));
+  }
+
+  get action(): Bytes | null {
+    let value = this.get("action");
+    if (value === null) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set action(value: Bytes | null) {
+    if (value === null) {
+      this.unset("action");
+    } else {
+      this.set("action", Value.fromBytes(value as Bytes));
+    }
+  }
+
+  get expiry(): i32 {
+    let value = this.get("expiry");
+    return value.toI32();
+  }
+
+  set expiry(value: i32) {
+    this.set("expiry", Value.fromI32(value));
+  }
+
+  get for(): BigInt {
+    let value = this.get("for");
+    return value.toBigInt();
+  }
+
+  set for(value: BigInt) {
+    this.set("for", Value.fromBigInt(value));
+  }
+
+  get against(): BigInt {
+    let value = this.get("against");
+    return value.toBigInt();
+  }
+
+  set against(value: BigInt) {
+    this.set("against", Value.fromBigInt(value));
+  }
+
+  get votes(): Array<string> | null {
+    let value = this.get("votes");
+    if (value === null) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set votes(value: Array<string> | null) {
+    if (value === null) {
+      this.unset("votes");
+    } else {
+      this.set("votes", Value.fromStringArray(value as Array<string>));
+    }
+  }
+
+  get targets(): Array<Bytes> {
+    let value = this.get("targets");
+    return value.toBytesArray();
+  }
+
+  set targets(value: Array<Bytes>) {
+    this.set("targets", Value.fromBytesArray(value));
+  }
+
+  get values(): Array<Bytes> {
+    let value = this.get("values");
+    return value.toBytesArray();
+  }
+
+  set values(value: Array<Bytes>) {
+    this.set("values", Value.fromBytesArray(value));
+  }
+
+  get signatures(): Array<Bytes> {
+    let value = this.get("signatures");
+    return value.toBytesArray();
+  }
+
+  set signatures(value: Array<Bytes>) {
+    this.set("signatures", Value.fromBytesArray(value));
+  }
+
+  get calldatas(): Array<Bytes> {
+    let value = this.get("calldatas");
+    return value.toBytesArray();
+  }
+
+  set calldatas(value: Array<Bytes>) {
+    this.set("calldatas", Value.fromBytesArray(value));
+  }
+}
+
+export class Vote extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id !== null, "Cannot save Vote entity without an ID");
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save Vote entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("Vote", id.toString(), this);
+  }
+
+  static load(id: string): Vote | null {
+    return store.get("Vote", id) as Vote | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get voter(): Bytes {
+    let value = this.get("voter");
+    return value.toBytes();
+  }
+
+  set voter(value: Bytes) {
+    this.set("voter", Value.fromBytes(value));
+  }
+
+  get option(): boolean {
+    let value = this.get("option");
+    return value.toBoolean();
+  }
+
+  set option(value: boolean) {
+    this.set("option", Value.fromBoolean(value));
+  }
+
+  get weight(): BigInt {
+    let value = this.get("weight");
+    return value.toBigInt();
+  }
+
+  set weight(value: BigInt) {
+    this.set("weight", Value.fromBigInt(value));
+  }
+}
+
+export class DailyDistributionSnapshot extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id !== null,
+      "Cannot save DailyDistributionSnapshot entity without an ID"
+    );
+    assert(
+      id.kind == ValueKind.STRING,
+      "Cannot save DailyDistributionSnapshot entity with non-string ID. " +
+        'Considering using .toHex() to convert the "id" to a string.'
+    );
+    store.set("DailyDistributionSnapshot", id.toString(), this);
+  }
+
+  static load(id: string): DailyDistributionSnapshot | null {
+    return store.get(
+      "DailyDistributionSnapshot",
+      id
+    ) as DailyDistributionSnapshot | null;
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get active(): BigInt {
+    let value = this.get("active");
+    return value.toBigInt();
+  }
+
+  set active(value: BigInt) {
+    this.set("active", Value.fromBigInt(value));
+  }
+
+  get inactive(): BigInt {
+    let value = this.get("inactive");
+    return value.toBigInt();
+  }
+
+  set inactive(value: BigInt) {
+    this.set("inactive", Value.fromBigInt(value));
+  }
+
+  get delegated(): BigInt {
+    let value = this.get("delegated");
+    return value.toBigInt();
+  }
+
+  set delegated(value: BigInt) {
+    this.set("delegated", Value.fromBigInt(value));
+  }
+}
+
 export class Token extends Entity {
   constructor(id: string) {
     super();
@@ -167,6 +435,24 @@ export class DailyPoolSnapshot extends Entity {
     this.set("balances", Value.fromBigIntArray(value));
   }
 
+  get denorms(): Array<BigInt> {
+    let value = this.get("denorms");
+    return value.toBigIntArray();
+  }
+
+  set denorms(value: Array<BigInt>) {
+    this.set("denorms", Value.fromBigIntArray(value));
+  }
+
+  get desiredDenorms(): Array<BigInt> {
+    let value = this.get("desiredDenorms");
+    return value.toBigIntArray();
+  }
+
+  set desiredDenorms(value: Array<BigInt>) {
+    this.set("desiredDenorms", Value.fromBigIntArray(value));
+  }
+
   get pool(): string {
     let value = this.get("pool");
     return value.toString();
@@ -207,6 +493,24 @@ export class PoolUnderlyingToken extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get ready(): boolean {
+    let value = this.get("ready");
+    return value.toBoolean();
+  }
+
+  set ready(value: boolean) {
+    this.set("ready", Value.fromBoolean(value));
+  }
+
+  get pool(): string {
+    let value = this.get("pool");
+    return value.toString();
+  }
+
+  set pool(value: string) {
+    this.set("pool", Value.fromString(value));
+  }
+
   get balance(): BigInt {
     let value = this.get("balance");
     return value.toBigInt();
@@ -214,6 +518,23 @@ export class PoolUnderlyingToken extends Entity {
 
   set balance(value: BigInt) {
     this.set("balance", Value.fromBigInt(value));
+  }
+
+  get minimumBalance(): BigInt | null {
+    let value = this.get("minimumBalance");
+    if (value === null) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set minimumBalance(value: BigInt | null) {
+    if (value === null) {
+      this.unset("minimumBalance");
+    } else {
+      this.set("minimumBalance", Value.fromBigInt(value as BigInt));
+    }
   }
 
   get token(): string {
@@ -281,15 +602,6 @@ export class IndexPoolBalance extends Entity {
 
   set pool(value: string) {
     this.set("pool", Value.fromString(value));
-  }
-
-  get token(): string {
-    let value = this.get("token");
-    return value.toString();
-  }
-
-  set token(value: string) {
-    this.set("token", Value.fromString(value));
   }
 
   get balance(): BigInt {
