@@ -1,3 +1,17 @@
+enum Status {
+  Inactive
+  Active
+  Delegated
+}
+
+enum State {
+  Active
+  Rejected
+  Accepted
+  Queued
+  Executed
+}
+
 type Category @entity {
   id: ID!
   metadataHash: Bytes!
@@ -8,10 +22,17 @@ type Category @entity {
 type Proposal @entity {
   # id = ipfsHash
   id: ID!
+  state: State!
   proposer: Bytes!
+  action: Bytes!
+  expiry: Int!
   for: BigInt!
   against: BigInt!
   votes: [Votes!]!
+  targets: [Bytes!]!
+  values: [Bytes!]!
+  signatures: [Bytes!]!
+  calldatas  [Bytes!]!
 }
 
 type Vote @entity {
@@ -20,6 +41,16 @@ type Vote @entity {
   voter: Bytes!
   option: Bool!
   weight: BigInt!
+}
+
+type Voter @entity {
+  # id = address
+  id: ID!
+  status: Status!
+  proxies: [Bytes!]!
+  # for: BigInt!
+  # against: BigInt!
+  # weight: BigInt!
 }
 
 type Token @entity {

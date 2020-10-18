@@ -42,13 +42,20 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Proposal
-        - Execution
         - Vote
       abis:
         - name: GovernorAlpha
           file: ./abis/GovernorAlpha.json
       eventHandlers:
-        - event:
+        - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
+          handler:
+        - event: VoteCast(indexed address,uint256,bool,uint256)
+          handler:
+        - event: ProposalCanceled(uint256)
+          handler:
+        - event: ProposalQueued(uint256, uint256)
+          handler:
+        - event: ProposalExecuted(uint256)
           handler:
       file: ./src/dao-mapping.ts
   - kind: ethereum/contract
@@ -68,7 +75,11 @@ dataSources:
         - name: Ndx
           file: ./abis/Ndx.json
       eventHandlers:
-        - event:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler:
+        - event: DelegateVotesChanged(indexed address,uint256,uint256)
+          handler:
+        - event: DelegateChanged(indexed address,indexed address,indexed address)
           handler:
       file: ./src/token-mapping.ts
 templates:
