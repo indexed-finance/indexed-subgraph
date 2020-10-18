@@ -46,19 +46,19 @@ export function handleTransfer(event: Transfer): void {
   let snapshot = initialiseSnapshot(timestamp);
   let recipentDelegate = contract.delegates(event.params.from);
   let senderDelegate = contract.delegates(event.params.to);
-  let value = event.params.amount
+  let value = event.params.amount;
 
   if(senderDelegate == event.params.from){
-    snapshot.active = snapshot.active.minus(value)
+    snapshot.active = snapshot.active.minus(value);
   } else if(senderDelegate.toHexString() == NA){
-    snapshot.inactive.minus(value)
+    snapshot.inactive.minus(value);
   } if(recipentDelegate == event.params.from){
-    snapshot.active = snapshot.active.plus(value)
+    snapshot.active = snapshot.active.plus(value);
   } else if(recipentDelegate.toHexString() == NA){
-    snapshot.inactive.minus(value)
+    snapshot.inactive.minus(value);
   }
 
-  snapshot.save()
+  snapshot.save();
 }
 
 export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
@@ -67,38 +67,29 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let difference = BigInt.fromI32(0);
 
   if(event.params.previousBalance > event.params.newBalance){
-    difference = event.params.previousBalance.minus(event.params.newBalance)
-    difference = snapshot.delegated.minus(difference)
+    difference = event.params.previousBalance.minus(event.params.newBalance);
+    difference = snapshot.delegated.minus(difference);
   } else {
-    difference = event.params.newBalance.minus(event.params.previousBalance)
-    difference = snapshot.delegated.plus(difference)
+    difference = event.params.newBalance.minus(event.params.previousBalance);
+    difference = snapshot.delegated.plus(difference);
   }
 
   snapshot.save()
 }
 
 function initialiseSnapshot(timestamp: i32): DailyDistributionSnapshot {
-  let eventTimestamp = new Date(timestamp * 1000)
-
-  eventTimestamp.setSeconds(0)
-  eventTimestamp.setHours(0)
-
-  let previousTimestamp = eventTimestamp
-
-  previousTimestamp.setTime(previousTimestamp.getTime() - ONE_DAY)
-
-  let newTimestamp = eventTimestamp.getTime() / 1000 as String
-  let oldTimestamp = previousTimestamp.getTime() / 1000 as String
-  let newSnapshot = DailyDistributionSnapshot.load(newTimestamp)
-  let oldSnapshot = DailyDistributionSnapshot.load(oldTimestamp)
+  let eventTimestamp = BigInt.fromI32(timestamp / ONE_DAY);
+  let previousTimestamp = eventTimestamp.minus(BigInt.fromI32(1));
+  let newSnapshot = DailyDistributionSnapshot.load(eventTimestamp.toString());
+  let oldSnapshot = DailyDistributionSnapshot.load(previousTimestamp.toString());
 
   if(newSnapshot == null){
-    newSnapshot = new DailyDistributionSnapshot(newTimestamp)
+    newSnapshot = new DailyDistributionSnapshot(eventTimestamp.toString());
 
     if(oldSnapshot != null){
-      newSnapshot.active = oldSnapshot.active
-      newSnapshot.inactive = oldSnapshot.inactive
-      newSnapshot.delegated = oldSnapshot.delegated
+      newSnapshot.active = oldSnapshot.active;
+      newSnapshot.inactive = oldSnapshot.inactive;
+      newSnapshot.delegated = oldSnapshot.delegated;
     } else {
       newSnapshot.active = BigInt.fromI32(0);
       newSnapshot.inactive = BigInt.fromI32(0);
@@ -106,5 +97,5 @@ function initialiseSnapshot(timestamp: i32): DailyDistributionSnapshot {
     }
   }
 
-  return newSnapshot as DailyDistributionSnapshot
+  return newSnapshot as DailyDistributionSnapshot;
 }
