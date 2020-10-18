@@ -18,7 +18,7 @@ export function createProposal(event: ProposalCreated) {
   proposal.save();
 }
 
-export function vote(event: VoteCast) {
+export function handleVote(event: VoteCast) {
   let proposal = Proposal.load(event.params.proposalId);
   let address = event.transaction.from.toHexString();
   let vote = new Vote(event.transaction.hash.toHex());

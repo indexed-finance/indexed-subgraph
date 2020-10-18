@@ -50,7 +50,7 @@ dataSources:
         - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
           handler: createProposal
         - event: VoteCast(indexed address,uint256,bool,uint256)
-          handler:
+          handler: handleVote
         - event: ProposalCanceled(uint256)
           handler: cancelProposal
         - event: ProposalQueued(uint256, uint256)
@@ -76,7 +76,7 @@ dataSources:
           file: ./abis/Ndx.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
-          handler:
+          handler: handleTransfer
         - event: DelegateVotesChanged(indexed address,uint256,uint256)
           handler:
         - event: DelegateChanged(indexed address,indexed address,indexed address)
