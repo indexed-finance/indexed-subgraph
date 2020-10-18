@@ -40,7 +40,7 @@ dataSources:
           handler: handleTokenAdded
         - event: CategorySorted(uint256)
           handler: handleCategorySorted
-      file: ./src/controller.ts
+      file: ./src/controller-mapping.ts
 templates:
   - name: UnboundTokenSeller
     kind: ethereum/contract
@@ -67,7 +67,7 @@ templates:
           handler: handleNewTokensToSell
         - event: SwappedTokens(indexed address,indexed address,uint256,uint256)
           handler: handleTokenSwap
-      file: ./src/token-seller.ts
+      file: ./src/token-seller-mapping.ts
   - name: PoolInitializer
     kind: ethereum/contract
     network: rinkeby
@@ -90,7 +90,7 @@ templates:
       eventHandlers:
         - event: TokensContributed(address,address,uint256,uint256)
           handler: handleTokensContributed
-      file: ./src/initializer.ts
+      file: ./src/initializer-mapping.ts
   - name: IPool
     kind: ethereum/contract
     network: rinkeby
@@ -133,4 +133,4 @@ templates:
           handler: handleSwapFeeUpdated
         - event: LOG_MAX_TOKENS_UPDATED(uint256)
           handler: handleMaxTokensUpdated
-      file: ./src/pool.ts
+      file: ./src/pool-mapping.ts
