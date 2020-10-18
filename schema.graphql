@@ -18,15 +18,15 @@ type Proposal @entity {
   id: ID!
   state: State!
   proposer: Bytes!
-  action: Bytes!
+  action: Bytes
   expiry: Int!
   for: BigInt!
   against: BigInt!
-  votes: [Votes!]!
+  votes: [Votes!]
   targets: [Bytes!]!
   values: [Bytes!]!
   signatures: [Bytes!]!
-  calldatas  [Bytes!]!
+  calldatas:  [Bytes!]!
 }
 
 type Vote @entity {
@@ -37,12 +37,11 @@ type Vote @entity {
   weight: BigInt!
 }
 
-type Voter @entity {
-  # id = timestamp
+type DailyDistributionSnapshot @entity {
   id: ID!
-  active: Int!
-  inactive: Int!
-  delegated: Int!
+  active: BigInt!
+  inactive: BigInt!
+  delegated: BigInt!
 }
 
 type Token @entity {

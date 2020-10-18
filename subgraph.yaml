@@ -48,7 +48,7 @@ dataSources:
           file: ./abis/GovernorAlpha.json
       eventHandlers:
         - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
-          handler:
+          handler: createProposal
         - event: VoteCast(indexed address,uint256,bool,uint256)
           handler:
         - event: ProposalCanceled(uint256)
@@ -70,7 +70,7 @@ dataSources:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Voter
+        - DailyDistributionSnapshot
       abis:
         - name: Ndx
           file: ./abis/Ndx.json
