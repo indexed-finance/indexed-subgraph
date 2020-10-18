@@ -52,11 +52,11 @@ dataSources:
         - event: VoteCast(indexed address,uint256,bool,uint256)
           handler:
         - event: ProposalCanceled(uint256)
-          handler:
+          handler: cancelProposal
         - event: ProposalQueued(uint256, uint256)
-          handler:
+          handler: queueProposal
         - event: ProposalExecuted(uint256)
-          handler:
+          handler: executeProposal
       file: ./src/dao-mapping.ts
   - kind: ethereum/contract
     name: Ndx
