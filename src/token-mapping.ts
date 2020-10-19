@@ -10,7 +10,6 @@ export function handleDelegateChanged(event: DelegateChanged): void {
   let snapshot = initialiseSnapshot(timestamp);
   let contract = Ndx.bind(event.address);
   let votes = contract.getPriorVotes(event.params.delegator, event.block.number.minus(BigInt.fromI32(1)));
-  let delegate = contract.delegates(event.params.delegator);
 
   if(event.params.fromDelegate.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.minus(votes);
@@ -28,6 +27,16 @@ export function handleTransfer(event: Transfer): void {
   let value = event.params.amount;
 
   if(event.params.from.toHexString() == NA){
+    snapshot.inactive = snapshot.inactive.plus(value);
+  } else if(senderDelegate.toHexString() != NA){
+    if(senderDelegate == event.params.from){
+      snapshot.active = snapshot.active.minus(value);
+    } else if(recipentDelegate.toHexString() != NA){
+      snapshot.delegated = snapshot.delegated.minus(value);
+    } else {
+      snapshot.inactive = snapshot.inactive.plus(value);
+    }
+  } else if(senderDelegate.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.minus(value);
   }
 
@@ -50,7 +59,7 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
       difference = snapshot.delegated.plus(difference);
     }
     snapshot.delegated = difference;
-  } else if(delegate == event.params.delegate && delegate.toHexString() != NA) {
+  } else if(delegate == event.params.delegate) {
     if(event.params.previousBalance > event.params.newBalance){
       difference = event.params.previousBalance.minus(event.params.newBalance);
       difference = snapshot.active.minus(difference);
@@ -59,7 +68,7 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
       difference = snapshot.active.plus(difference);
     }
     snapshot.active = difference;
-  } else {
+  } else if(delegate.toHexString() == NA) {
     if(event.params.previousBalance > event.params.newBalance){
       difference = event.params.previousBalance.minus(event.params.newBalance);
       difference = snapshot.inactive.minus(difference);
