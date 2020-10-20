@@ -4,17 +4,20 @@ import { BigInt, Bytes, Address } from '@graphprotocol/graph-ts';
 
 export function createProposal(event: ProposalCreated): void {
   let proposal = new Proposal(event.params.id.toHexString());
+  let title = propsal.description.substring(0, 35)
 
   proposal.proposer = event.transaction.from;
   proposal.targets = event.params.targets as Array<Bytes>;
   proposal.calldatas = event.params.calldatas as Array<Bytes>;
   proposal.signatures = event.params.signatures as Array<String>;
+  proposal.description = event.params.description as String;
   proposal.values = event.params.values as Array<BigInt>;
   proposal.expiry = event.params.endBlock.toI32();
   proposal.votes = new Array<String>();
   proposal.against = BigInt.fromI32(0);
   proposal.for = BigInt.fromI32(0);
   proposal.state = "0";
+  propsal.title = title;
 
   proposal.save();
 }

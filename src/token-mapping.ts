@@ -9,7 +9,7 @@ export function handleDelegateChanged(event: DelegateChanged): void {
   let timestamp = event.block.timestamp.toI32();
   let snapshot = initialiseSnapshot(timestamp);
   let contract = Ndx.bind(event.address);
-  let votes = contract.getPriorVotes(event.params.delegator, event.block.number.minus(BigInt.fromI32(1)));
+  let votes = contract.balanceOf(event.params.delegator);
 
   if(event.params.fromDelegate.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.minus(votes);
@@ -28,16 +28,12 @@ export function handleTransfer(event: Transfer): void {
 
   if(event.params.from.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.plus(value);
-  } else if(senderDelegate.toHexString() != NA){
-    if(senderDelegate == event.params.from){
-      snapshot.active = snapshot.active.minus(value);
-    } else if(recipentDelegate.toHexString() != NA){
-      snapshot.delegated = snapshot.delegated.minus(value);
+  } else if(senderDelegate != recipentDelegate){
+    if(senderDelegate.toHexString() == NA){
+      snapshot.inactive = snapshot.inactive.minus(value);
     } else {
-      snapshot.inactive = snapshot.inactive.plus(value);
+      snapshot.delegated = snapshot.delegated.minus(value);
     }
-  } else if(senderDelegate.toHexString() == NA){
-    snapshot.inactive = snapshot.inactive.minus(value);
   }
 
   snapshot.save();
@@ -50,7 +46,7 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let snapshot = initialiseSnapshot(timestamp);
   let difference = BigInt.fromI32(0);
 
-  if(delegate != event.params.delegate && delegate.toHexString() != NA){
+  if(delegate != event.params.delegate){
     if(event.params.previousBalance > event.params.newBalance){
       difference = event.params.previousBalance.minus(event.params.newBalance);
       difference = snapshot.delegated.minus(difference);
@@ -59,7 +55,7 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
       difference = snapshot.delegated.plus(difference);
     }
     snapshot.delegated = difference;
-  } else if(delegate == event.params.delegate) {
+  } else if(delegate == event.params.delegate ) {
     if(event.params.previousBalance > event.params.newBalance){
       difference = event.params.previousBalance.minus(event.params.newBalance);
       difference = snapshot.active.minus(difference);
@@ -68,7 +64,7 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
       difference = snapshot.active.plus(difference);
     }
     snapshot.active = difference;
-  } else if(delegate.toHexString() == NA) {
+  } else {
     if(event.params.previousBalance > event.params.newBalance){
       difference = event.params.previousBalance.minus(event.params.newBalance);
       difference = snapshot.inactive.minus(difference);
