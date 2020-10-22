@@ -193,3 +193,18 @@ type PoolInitializer @entity {
   # Total amount of WETH users have been credited for
   totalCreditedWETH: BigInt!
 }
+
+type NdxStakingPool @entity {
+  id: ID!
+  isReady: Boolean!
+  isWethPair: Boolean!
+  indexPool: Bytes!
+  stakingToken: Bytes!
+  totalSupply: BigInt!
+  rewardPerTokenStored: BigInt!
+  periodFinish: Int!
+  lastUpdateTime: Int!
+  totalRewards: BigInt!
+  claimedRewards: BigInt!
+  rewardRate: BigInt!
+}
