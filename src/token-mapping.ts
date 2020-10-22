@@ -1,6 +1,6 @@
 import { Ndx, Transfer, DelegateChanged, DelegateVotesChanged } from '../generated/Ndx/Ndx';
 import { DailyDistributionSnapshot } from '../generated/schema';
-import { BigInt, Bytes, Address } from '@graphprotocol/graph-ts';
+import { BigInt, Bytes, Address, log } from '@graphprotocol/graph-ts';
 
 const ONE_DAY = 86400;
 const NA = '0x0000000000000000000000000000000000000000';
@@ -11,10 +11,6 @@ export function handleDelegateChanged(event: DelegateChanged): void {
   let contract = Ndx.bind(event.address);
   let votes = contract.balanceOf(event.params.delegator);
 
-  if(event.params.fromDelegate.toHexString() == NA){
-    snapshot.inactive = snapshot.inactive.minus(votes);
-  }
-
   snapshot.save();
 }
 
@@ -24,19 +20,44 @@ export function handleTransfer(event: Transfer): void {
   let snapshot = initialiseSnapshot(timestamp);
   let recipentDelegate = contract.delegates(event.params.to);
   let senderDelegate = contract.delegates(event.params.from);
+  let condition = senderDelegate.toHexString() != recipentDelegate.toHexString()
   let value = event.params.amount;
+  let result = condition ? 'true' : 'false'
+
+  log.info('sender: {}', [ senderDelegate.toHexString() ])
+  log.info('from: {}', [ event.params.from.toHexString() ])
+  log.info('amount: {}', [ value.toString() ])
+  log.info('condition: {}', [ result ])
+  log.info('id: {}', [ snapshot.id ])
 
   if(event.params.from.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.plus(value);
-  } else if(senderDelegate != recipentDelegate){
+    snapshot.save();
+  } else if(condition){
     if(senderDelegate.toHexString() == NA){
       snapshot.inactive = snapshot.inactive.minus(value);
-    } else {
-      snapshot.delegated = snapshot.delegated.minus(value);
+
+      log.info('case: {}', [ '1' ])
+
+      if(recipentDelegate.toHexString() != event.params.to.toHexString()){
+        snapshot.delegated = snapshot.delegated.plus(value);
+      } else {
+        snapshot.active = snapshot.active.plus(value);
+      }
+      snapshot.save();
+    } else if(senderDelegate.toHexString() == event.params.from.toHexString()) {
+      snapshot.active = snapshot.active.minus(value);
+
+      log.info('case: {}', [ '2' ])
+
+      if(recipentDelegate.toHexString() == NA){
+        snapshot.inactive = snapshot.inactive.plus(value);
+      } else if(recipentDelegate.toHexString() != event.params.to.toHexString()){
+        snapshot.delegated = snapshot.delegated.plus(value);
+      }
+      snapshot.save();
     }
   }
-
-  snapshot.save();
 }
 
 export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
@@ -45,34 +66,19 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let delegate = contract.delegates(event.params.delegate);
   let snapshot = initialiseSnapshot(timestamp);
   let difference = BigInt.fromI32(0);
+  let balance = contract.balanceOf(event.params.delegate);
 
-  if(delegate != event.params.delegate){
-    if(event.params.previousBalance > event.params.newBalance){
-      difference = event.params.previousBalance.minus(event.params.newBalance);
-      difference = snapshot.delegated.minus(difference);
+  log.info('delegate: {}', [ delegate.toHexString() ])
+  log.info('sender: {}', [ event.params.delegate.toHexString() ])
+
+  if(event.params.previousBalance == BigInt.fromI32(0)){
+    if(event.params.newBalance <= snapshot.inactive) {
+      snapshot.inactive = snapshot.inactive.minus(event.params.newBalance);
+      snapshot.active = snapshot.active.plus(event.params.newBalance);
     } else {
-      difference = event.params.newBalance.minus(event.params.previousBalance);
-      difference = snapshot.delegated.plus(difference);
+      snapshot.inactive = snapshot.inactive.plus(event.params.newBalance);
+      snapshot.active = snapshot.active.minus(event.params.newBalance);
     }
-    snapshot.delegated = difference;
-  } else if(delegate == event.params.delegate ) {
-    if(event.params.previousBalance > event.params.newBalance){
-      difference = event.params.previousBalance.minus(event.params.newBalance);
-      difference = snapshot.active.minus(difference);
-    } else {
-      difference = event.params.newBalance.minus(event.params.previousBalance);
-      difference = snapshot.active.plus(difference);
-    }
-    snapshot.active = difference;
-  } else {
-    if(event.params.previousBalance > event.params.newBalance){
-      difference = event.params.previousBalance.minus(event.params.newBalance);
-      difference = snapshot.inactive.minus(difference);
-    } else {
-      difference = event.params.newBalance.minus(event.params.previousBalance);
-      difference = snapshot.inactive.plus(difference);
-    }
-    snapshot.inactive = difference;
   }
 
   snapshot.save()

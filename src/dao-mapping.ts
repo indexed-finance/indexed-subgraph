@@ -4,7 +4,7 @@ import { BigInt, Bytes, Address } from '@graphprotocol/graph-ts';
 
 export function createProposal(event: ProposalCreated): void {
   let proposal = new Proposal(event.params.id.toHexString());
-  let title = propsal.description.substring(0, 35)
+  let title = proposal.description.substring(0, 35)
 
   proposal.proposer = event.transaction.from;
   proposal.targets = event.params.targets as Array<Bytes>;
@@ -16,28 +16,33 @@ export function createProposal(event: ProposalCreated): void {
   proposal.votes = new Array<String>();
   proposal.against = BigInt.fromI32(0);
   proposal.for = BigInt.fromI32(0);
+  proposal.title = title as String;
   proposal.state = "0";
-  propsal.title = title;
 
   proposal.save();
 }
 
 export function handleVote(event: VoteCast): void {
-  let proposal = Proposal.load(event.params.proposalId.toHexString());
-  let vote = new Vote(event.transaction.hash.toHex());
+  let proposalId = event.params.proposalId.toHexString();
+  let transactionHash = event.transaction.hash.toHex()
+  let proposal = Proposal.load(proposalId);
+  let vote = new Vote(transactionHash);
+  let votes = proposal.votes
 
   vote.weight = event.params.votes;
   vote.option = event.params.support;
   vote.voter = event.transaction.from;
-  vote.save();
 
-  if(!event.params.support){
-    proposal.against = event.params.votes.plus(proposal.against);
+  vote.save();
+  votes.push(transactionHash);
+
+  if(event.params.support){
+    proposal.for = proposal.for.plus(event.params.votes);
   } else {
-    proposal.for = event.params.votes.minus(proposal.for);
+    proposal.against = proposal.against.plus(event.params.votes);
   }
 
-  proposal.votes.push(vote.id);
+  proposal.votes = votes;
   proposal.save();
 }
 
