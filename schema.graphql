@@ -1,12 +1,3 @@
-enum State {
-  Active
-  Cancelled
-  Rejected
-  Accepted
-  Queued
-  Executed
-}
-
 type Category @entity {
   id: ID!
   metadataHash: Bytes!
@@ -17,16 +8,18 @@ type Category @entity {
 type Proposal @entity {
   # id = proposalCount
   id: ID!
-  state: State!
+  state: String!
   proposer: Bytes!
   action: Bytes
   expiry: Int!
   for: BigInt!
   against: BigInt!
-  votes: [Vote!]
+  votes: [Vote!]!
   targets: [Bytes!]!
-  values: [Bytes!]!
-  signatures: [Bytes!]!
+  values: [BigInt!]!
+  signatures: [String!]!
+  description: String!
+  title: String!
   calldatas:  [Bytes!]!
 }
 
