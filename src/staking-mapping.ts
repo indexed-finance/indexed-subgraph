@@ -5,8 +5,8 @@ import { RewardAdded } from "../generated/templates/StakingRewards/StakingReward
 export function handleRewardAdded(event: RewardAdded): void {
   let pool = new NdxStakingPool(event.address.toHexString());
   let rewards = StakingRewards.bind(event.address);
-  pool.lastUpdateTime = event.block.timestamp;
-  pool.periodFinish = rewards.periodFinish();
+  pool.lastUpdateTime = event.block.timestamp.toI32();
+  pool.periodFinish = rewards.periodFinish().toI32();
   pool.rewardRate = rewards.rewardRate();
   pool.save();
 }
