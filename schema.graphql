@@ -189,6 +189,7 @@ type PoolInitializer @entity {
 
 type NdxStakingPool @entity {
   id: ID!
+  startsAt: Int!
   isReady: Boolean!
   isWethPair: Boolean!
   indexPool: Bytes!
