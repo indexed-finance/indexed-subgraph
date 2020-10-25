@@ -8,6 +8,7 @@ export function handleRewardAdded(event: RewardAdded): void {
   pool.lastUpdateTime = event.block.timestamp.toI32();
   pool.periodFinish = rewards.periodFinish().toI32();
   pool.rewardRate = rewards.rewardRate();
+  pool.isReady = true;
   pool.save();
 }
 
