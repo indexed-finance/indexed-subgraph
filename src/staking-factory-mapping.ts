@@ -9,6 +9,7 @@ export function handleIndexPoolRewardsAdded(event: IndexPoolStakingRewardsAdded)
   let factory = StakingRewardsFactory.bind(event.address);
   let rewardsInfo = factory.stakingRewardsInfoByStakingToken(event.params.stakingToken);
   let rewardAmount = rewardsInfo.value2;
+  pool.startsAt = factory.stakingRewardsGenesis().toI32();
   pool.isReady = false;
   pool.isWethPair = false;
   pool.indexPool = event.params.stakingToken;
@@ -29,6 +30,7 @@ export function handleUniswapStakingRewardsAdded(event: UniswapStakingRewardsAdd
   let factory = StakingRewardsFactory.bind(event.address);
   let rewardsInfo = factory.stakingRewardsInfoByStakingToken(event.params.stakingToken);
   let rewardAmount = rewardsInfo.value2;
+  pool.startsAt = factory.stakingRewardsGenesis().toI32();
   pool.isReady = false;
   pool.isWethPair = false;
   pool.indexPool = event.params.indexPool;
