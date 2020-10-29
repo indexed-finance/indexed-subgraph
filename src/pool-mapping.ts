@@ -87,10 +87,10 @@ export function handleJoin(event: LOG_JOIN): void {
 }
 
 export function handleExit(event: LOG_EXIT): void {
-  let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
-  tokenOut.balance = tokenOut.balance.minus(event.params.tokenAmountOut);
-  tokenOut.save();
-  updateDailySnapshot(event);
+  // let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
+  // tokenOut.balance = tokenOut.balance.minus(event.params.tokenAmountOut);
+  // tokenOut.save();
+  // updateDailySnapshot(event);
 }
 
 export function handleDenormUpdated(event: LOG_DENORM_UPDATED): void {
