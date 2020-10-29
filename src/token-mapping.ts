@@ -11,6 +11,12 @@ export function handleDelegateChanged(event: DelegateChanged): void {
   let contract = Ndx.bind(event.address);
   let votes = contract.balanceOf(event.params.delegator);
 
+  // Adding newly delegated addresses inactive balances to the active mapping
+  if(event.params.fromDelegate.toHexString() == NA){
+    snapshot.inactive = snapshot.inactive.minus(votes);
+    snapshot.active = snapshot.active.plus(votes);
+  }
+
   snapshot.save();
 }
 
@@ -30,56 +36,40 @@ export function handleTransfer(event: Transfer): void {
   log.info('condition: {}', [ result ])
   log.info('id: {}', [ snapshot.id ])
 
+  // Genesis mint creates the entry value in the inactive class
   if(event.params.from.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.plus(value);
-    snapshot.save();
   } else if(condition){
-    if(senderDelegate.toHexString() == NA){
-      snapshot.inactive = snapshot.inactive.minus(value);
+    // Active addreses = delegated address == msg.sender
+    // Inactive address = delegated address == address(0x0)
+    // Delegated address = delegated adress != msg.sender
 
-      log.info('case: {}', [ '1' ])
-
-      if(recipentDelegate.toHexString() != event.params.to.toHexString()){
-        snapshot.delegated = snapshot.delegated.plus(value);
-      } else {
-        snapshot.active = snapshot.active.plus(value);
-      }
-      snapshot.save();
-    } else if(senderDelegate.toHexString() == event.params.from.toHexString()) {
-      snapshot.active = snapshot.active.minus(value);
-
-      log.info('case: {}', [ '2' ])
-
-      if(recipentDelegate.toHexString() == NA){
-        snapshot.inactive = snapshot.inactive.plus(value);
-      } else if(recipentDelegate.toHexString() != event.params.to.toHexString()){
-        snapshot.delegated = snapshot.delegated.plus(value);
-      }
-      snapshot.save();
+    // Therefore the possible outcomes need to be programmed:
+    // A active address transfers to an inactive address (-active, +inactive)
+    // A inactive address transfers to an active address (-inactive, +active)
+    // A active address transfers to an delegated address (-active, +delegated)
+    // A inactive address transfers to an delegated address (-inactive, +delegated)
+    // A delegated address transfers to an active address (-delegated, +active)
+    // A delegated address transfers to an inactive address (-delegated, +inactive)
     }
+    snapshot.save();
   }
-}
 
 export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let timestamp = event.block.timestamp.toI32();
   let contract = Ndx.bind(event.address);
   let delegate = contract.delegates(event.params.delegate);
   let snapshot = initialiseSnapshot(timestamp);
-  let difference = BigInt.fromI32(0);
   let balance = contract.balanceOf(event.params.delegate);
 
   log.info('delegate: {}', [ delegate.toHexString() ])
   log.info('sender: {}', [ event.params.delegate.toHexString() ])
 
-  if(event.params.previousBalance == BigInt.fromI32(0)){
-    if(event.params.newBalance <= snapshot.inactive) {
-      snapshot.inactive = snapshot.inactive.minus(event.params.newBalance);
-      snapshot.active = snapshot.active.plus(event.params.newBalance);
-    } else {
-      snapshot.inactive = snapshot.inactive.plus(event.params.newBalance);
-      snapshot.active = snapshot.active.minus(event.params.newBalance);
-    }
-  }
+  // Event triggers whenever an active address (aka active or delegated) and
+  // updates the delegates current mapping, this is triggered on every transfer so
+  // implementing logic here can complicate logic (as you can't account for inactive).
+  // As whenever someone delegates an address it also fires, but you could use
+  // getPriorvotes to validte whether they had a delegated balance beforehand (aka 0 = inactive).
 
   snapshot.save()
 }
@@ -92,6 +82,8 @@ function initialiseSnapshot(timestamp: i32): DailyDistributionSnapshot {
   let newSnapshot = DailyDistributionSnapshot.load(eventTimestamp.toString());
   let oldSnapshot = DailyDistributionSnapshot.load(previousTimestamp.toString());
 
+  // Possible problems with this as it only creates a limited number of records
+  // the idea is to find the last recorded entry (using id) for that entity 
   for(let x = 1; x < 14; x++){
     if(oldSnapshot != null) break;
 
