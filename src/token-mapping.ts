@@ -83,7 +83,7 @@ function initialiseSnapshot(timestamp: i32): DailyDistributionSnapshot {
   let oldSnapshot = DailyDistributionSnapshot.load(previousTimestamp.toString());
 
   // Possible problems with this as it only creates a limited number of records
-  // the idea is to find the last recorded entry (using id) for that entity 
+  // the idea is to find the last recorded entry (using id) for that entity
   for(let x = 1; x < 14; x++){
     if(oldSnapshot != null) break;
 
