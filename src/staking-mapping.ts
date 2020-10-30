@@ -6,6 +6,9 @@ import { BigInt, Address } from "@graphprotocol/graph-ts";
 
 export function handleRewardAdded(event: RewardAdded): void {
   let pool = intialisePool(event.address, event.block.timestamp);
+
+  pool.isReady = true;
+  pool.save();
 }
 
 export function handleStaked(event: Staked): void {
@@ -34,14 +37,16 @@ function intialisePool(address: Address, timestamp: BigInt): NdxStakingPool {
   let rewards = StakingRewards.bind(address);
 
   if(pool == null){
-    pool.lastUpdateTime = timestamp.toI32();
-    pool.periodFinish = rewards.periodFinish().toI32();
-    pool.rewardRate = rewards.rewardRate();
+    let pool = new NdxStakingPool(address.toHexString());
     pool.claimedRewards = BigInt.fromI32(0);
     pool.totalSupply = BigInt.fromI32(0);
     pool.isReady = true;
-    pool.save();
   }
+
+  pool.lastUpdateTime = timestamp.toI32();
+  pool.periodFinish = rewards.periodFinish().toI32();
+  pool.rewardRate = rewards.rewardRate();
+  pool.save();
 
   return pool as NdxStakingPool;
 }
