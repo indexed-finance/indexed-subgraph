@@ -165,6 +165,14 @@ type InitializerToken @entity {
   balance: BigInt!
   # Amount of tokens still needed
   amountRemaining: BigInt!
+  # Token address
+  address: Bytes!
+  # Token decimals
+  decimals: Int
+  # Token name
+  name: String
+  # Token symbol
+  symbol: String
 }
 
 type TokenContribution @entity {
