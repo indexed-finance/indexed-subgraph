@@ -29,6 +29,8 @@ dataSources:
           file: ./abis/PoolInitializer.json
         - name: UnboundTokenSeller
           file: ./abis/UnboundTokenSeller.json
+        - name: IERC20
+          file: ./abis/IERC20.json
       eventHandlers:
         - event: NewPoolInitializer(address,address,uint256,uint256)
           handler: handleNewPool
@@ -183,6 +185,8 @@ templates:
       abis:
         - name: IPool
           file: ./abis/IPool.json
+        - name: IERC20
+          file: ./abis/IERC20.json
       eventHandlers:
         - event: LOG_SWAP(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleSwap
