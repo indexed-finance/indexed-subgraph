@@ -97,6 +97,7 @@ export function handleNewPool(event: NewPoolInitializer): void {
 
   // Create the IndexPool entity.
   let pool = new IndexPool(poolAddress.toHexString());
+  let ipool = IPoolContract.bind(poolAddress);
   pool.category = categoryID;
   pool.size = event.params.indexSize.toI32();
   pool.totalWeight = new BigInt(0);
@@ -105,6 +106,8 @@ export function handleNewPool(event: NewPoolInitializer): void {
   pool.feesTotal = new BigInt(0);
   pool.isPublic = false;
   pool.initialized = false;
+  pool.name = ipool.name();
+  pool.symbol = ipool.symbol();
   pool.save();
 }
 

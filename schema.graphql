@@ -104,6 +104,10 @@ type IndexPool @entity {
   id: ID!
   # Category the pool indexes
   category: Category!
+  # Pool ERC20 name
+  name: String!
+  # Pool ERC20 symbol
+  symbol: String!
   # Number of tokens the pool should index at a time
   size: Int!
   # Contract that sells unboudn tokens
