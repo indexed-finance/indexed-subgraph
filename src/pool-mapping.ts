@@ -3,6 +3,8 @@ import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool, Sw
 import { Address, ethereum, BigInt, Bytes, BigDecimal } from "@graphprotocol/graph-ts";
 import { LOG_MAX_TOKENS_UPDATED, LOG_MINIMUM_BALANCE_UPDATED, LOG_SWAP_FEE_UPDATED } from "../generated/templates/IPool/IPool";
 import { hexToDecimal, joinHyphen } from "./helpers";
+import { getDecimals, getName, getSymbol } from "./ierc20";
+import { IERC20 } from "../generated/templates/IPool/IERC20";
 
 function loadUnderlyingToken(poolAddress: Address, tokenAddress: Address): PoolUnderlyingToken {
   let tokenID = joinHyphen([poolAddress.toHexString(), tokenAddress.toHexString()]);
@@ -158,6 +160,10 @@ export function handleTokenAdded(event: LOG_TOKEN_ADDED): void {
   token.desiredDenorm = event.params.desiredDenorm;
   token.balance = new BigInt(0);
   token.pool = event.address.toHexString();
+  let ierc20 = IERC20.bind(event.params.token);
+  token.decimals = getDecimals(ierc20);
+  token.name = getName(ierc20);
+  token.symbol = getSymbol(ierc20);
   token.save();
 }
 

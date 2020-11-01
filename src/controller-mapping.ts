@@ -12,6 +12,7 @@ import { IPool, PoolInitializer, UnboundTokenSeller } from '../generated/templat
 
 import { UnboundTokenSeller as SellerContract } from '../generated/templates/UnboundTokenSeller/UnboundTokenSeller';
 import { IPool as IPoolContract } from '../generated/templates/IPool/IPool';
+import { IERC20 } from '../generated/templates/IPool/IERC20';
 import { PoolInitializer as PoolInitializerContract } from '../generated/templates/PoolInitializer/PoolInitializer';
 
 import {
@@ -21,6 +22,7 @@ import {
 
 import { BigInt } from '@graphprotocol/graph-ts';
 import { hexToDecimal } from './helpers';
+import { getDecimals, getName, getSymbol } from './ierc20';
 
 export function handleNewCategory(event: CategoryAdded): void {
   let category = new Category(event.params.categoryID.toHexString());
@@ -141,6 +143,11 @@ export function handlePoolInitialized(event: PoolInitialized): void {
     token.desiredDenorm = record.desiredDenorm;
     token.balance = record.balance;
     token.pool = poolAddress.toHexString();
+    token.address = tokenAddress;
+    let ierc20 = IERC20.bind(tokenAddress);
+    token.decimals = getDecimals(ierc20);
+    token.name = getName(ierc20);
+    token.symbol = getSymbol(ierc20);
     token.save();
   }
   pool.save();
