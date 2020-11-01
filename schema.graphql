@@ -66,6 +66,14 @@ type PoolUnderlyingToken @entity {
   # Minimum number of tokens the pool must hold to allow exits
   minimumBalance: BigInt
   # Token address
+  address: Bytes!
+  # Token decimals
+  decimals: Int
+  # Token name
+  name: String
+  # Token symbol
+  symbol: String
+  # Token address (old & now redundant, remove this)
   token: Token!
   # Denormalized weight
   denorm: BigInt!
