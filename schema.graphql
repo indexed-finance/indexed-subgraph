@@ -165,6 +165,8 @@ type InitializerToken @entity {
   poolInitializer: PoolInitializer!
   # Address of the token
   token: Token!
+  # Target balance
+  targetBalance: BigInt!
   # Balance of the pool initializer
   balance: BigInt!
   # Amount of tokens still needed

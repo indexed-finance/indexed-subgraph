@@ -85,6 +85,7 @@ export function handleNewPool(event: NewPoolInitializer): void {
     token.poolInitializer = initializerAddress.toHexString();
     token.token = tokenAddress.toHexString();
     token.balance = new BigInt(0);
+    token.targetBalance = desiredAmounts[i];
     token.amountRemaining = desiredAmounts[i];
     token.address = tokenAddress;
     let ierc20 = IERC20.bind(tokenAddress);
