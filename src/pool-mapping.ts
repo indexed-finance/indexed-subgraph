@@ -1,6 +1,6 @@
 import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXIT, Transfer, IPool, LOG_TOKEN_REMOVED, LOG_TOKEN_ADDED, LOG_TOKEN_READY } from "../generated/templates/IPool/IPool";
 import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool, Swap } from "../generated/schema";
-import { Address, ethereum, BigInt, Bytes, BigDecimal } from "@graphprotocol/graph-ts";
+import { Address, ethereum, BigInt, Bytes, BigDecimal, log } from "@graphprotocol/graph-ts";
 import { LOG_MAX_TOKENS_UPDATED, LOG_MINIMUM_BALANCE_UPDATED, LOG_SWAP_FEE_UPDATED } from "../generated/templates/IPool/IPool";
 import { hexToDecimal, joinHyphen } from "./helpers";
 import { getDecimals, getName, getSymbol } from "./ierc20";
@@ -41,21 +41,28 @@ function updateDailySnapshot(event: ethereum.Event): void {
   let snapshot = new DailyPoolSnapshot(poolDayID);
   snapshot.pool = event.address.toHexString();
   snapshot.timestamp = timestamp;
-  snapshot.tokens = [];
-  snapshot.balances = [];
-  snapshot.denorms = [];
-  snapshot.desiredDenorms = [];
 
   let bpool = IPool.bind(event.address);
   let tokens = bpool.getCurrentTokens();
+  let denorms = new Array<BigInt>()
+  let balances = new Array<BigInt>()
+  let desired = new Array<BigInt>()
+  let parsed =  new Array<String>()
+
   for (let i = 0; i < tokens.length; i++) {
     let token = tokens[i];
     let record = bpool.getTokenRecord(token);
-    snapshot.tokens.push(token.toHexString());
-    snapshot.balances.push(record.balance);
-    snapshot.denorms.push(record.denorm);
-    snapshot.desiredDenorms.push(record.desiredDenorm);
+
+    balances.push(record.balance);
+    denorms.push(record.denorm);
+    desired.push(record.desiredDenorm);
+    parsed.push(token.toHexString())
   }
+
+  snapshot.desiredDenorms = desired;
+  snapshot.balances = balances;
+  snapshot.denorms = denorms;
+  snapshot.tokens = parsed;
   snapshot.save();
 }
 

@@ -30,11 +30,11 @@ export function handleTransfer(event: Transfer): void {
   let value = event.params.amount;
   let result = condition ? 'true' : 'false'
 
-  log.info('sender: {}', [ senderDelegate.toHexString() ])
-  log.info('from: {}', [ event.params.from.toHexString() ])
-  log.info('amount: {}', [ value.toString() ])
-  log.info('condition: {}', [ result ])
-  log.info('id: {}', [ snapshot.id ])
+  // log.info('sender: {}', [ senderDelegate.toHexString() ])
+  // log.info('from: {}', [ event.params.from.toHexString() ])
+  // log.info('amount: {}', [ value.toString() ])
+  // log.info('condition: {}', [ result ])
+  // log.info('id: {}', [ snapshot.id ])
 
   // Genesis mint creates the entry value in the inactive class
   if(event.params.from.toHexString() == NA){
@@ -62,8 +62,8 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let snapshot = initialiseSnapshot(timestamp);
   let balance = contract.balanceOf(event.params.delegate);
 
-  log.info('delegate: {}', [ delegate.toHexString() ])
-  log.info('sender: {}', [ event.params.delegate.toHexString() ])
+  // log.info('delegate: {}', [ delegate.toHexString() ])
+  // log.info('sender: {}', [ event.params.delegate.toHexString() ])
 
   // Event triggers whenever an active address (aka active or delegated) and
   // updates the delegates current mapping, this is triggered on every transfer so
