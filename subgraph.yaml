@@ -169,6 +169,8 @@ templates:
       eventHandlers:
         - event: TokensContributed(address,address,uint256,uint256)
           handler: handleTokensContributed
+        - event: TokensClaimed(address,uint256)
+          handler: handleTokensClaimed
       file: ./src/initializer-mapping.ts
   - name: IPool
     kind: ethereum/contract

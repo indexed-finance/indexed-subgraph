@@ -21,8 +21,7 @@ import {
 } from '../generated/MarketCapSqrtController/MarketCapSqrtController';
 
 import { BigInt } from '@graphprotocol/graph-ts';
-import { hexToDecimal } from './helpers';
-import { getDecimals, getName, getSymbol } from './ierc20';
+import { hexToDecimal, getDecimals, getName, getSymbol } from './helpers';
 
 export function handleNewCategory(event: CategoryAdded): void {
   let category = new Category(event.params.categoryID.toHexString());

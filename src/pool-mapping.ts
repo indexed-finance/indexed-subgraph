@@ -2,8 +2,7 @@ import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXI
 import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool, Swap } from "../generated/schema";
 import { Address, ethereum, BigInt, Bytes, BigDecimal, log } from "@graphprotocol/graph-ts";
 import { LOG_MAX_TOKENS_UPDATED, LOG_MINIMUM_BALANCE_UPDATED, LOG_SWAP_FEE_UPDATED } from "../generated/templates/IPool/IPool";
-import { hexToDecimal, joinHyphen } from "./helpers";
-import { getDecimals, getName, getSymbol } from "./ierc20";
+import { hexToDecimal, joinHyphen, getDecimals, getName, getSymbol } from "./helpers";
 import { IERC20 } from "../generated/templates/IPool/IERC20";
 
 function loadUnderlyingToken(poolAddress: Address, tokenAddress: Address): PoolUnderlyingToken {

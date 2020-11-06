@@ -1,6 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { InitializerToken, PoolInitializer, TokenContribution, TokenContributor } from "../generated/schema";
-import { TokensContributed, TokensContributed__Params } from "../generated/templates/PoolInitializer/PoolInitializer";
+import { TokensContributed, TokensClaimed } from "../generated/templates/PoolInitializer/PoolInitializer";
 import { joinHyphen } from "./helpers";
 
 function getContributor(initializerAddress: Address, accountAddress: Address): TokenContributor {
@@ -46,4 +46,10 @@ export function handleTokensContributed(event: TokensContributed): void {
   contribution.transactionHash = txHash;
   contribution.timestamp = event.block.timestamp.toI32() as i32;
   contribution.save();
+}
+
+export function handleTokensClaimed(event: TokensClaimed): void {
+  let contributor = getContributor(event.address, event.transaction.from);
+  contributor.credit = BigInt.fromI32(0);
+  contributor.save();
 }
