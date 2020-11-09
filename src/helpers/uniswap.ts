@@ -1,4 +1,4 @@
-import { log, BigInt, Address, Bytes, log } from '@graphprotocol/graph-ts'
+import { log, BigInt, Address, Bytes } from '@graphprotocol/graph-ts'
 import { IERC20 } from '../../generated/templates/Pair/IERC20'
 import { Factory as FactoryContract } from '../../generated/templates/Pair/Factory'
 import { 
@@ -15,8 +15,8 @@ export let factoryContract = FactoryContract.bind(Address.fromString(FACTORY_ADD
 
 export function sortTokens(tokenA: Address, tokenB: Address): Address[] {
   let ret = new Array<Address>()
-  let a = BigInt.fromUnsignedBytes(Bytes.fromHexString(tokenA.toHexString()) as Bytes)
-  let b = BigInt.fromUnsignedBytes(Bytes.fromHexString(tokenB.toHexString()) as Bytes)
+  let a = BigInt.fromUnsignedBytes(Bytes.fromHexString(tokenA.toHexString()).reverse() as Bytes)
+  let b = BigInt.fromUnsignedBytes(Bytes.fromHexString(tokenB.toHexString()).reverse() as Bytes)
   if (a.lt(b)) {
     ret.push(tokenA)
     ret.push(tokenB)

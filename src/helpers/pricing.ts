@@ -34,33 +34,74 @@ let WHITELIST: string[] = [
 const WETH_ADDRESS = '0x72710b0b93c8f86aef4ec8bd832868a15df50375';
 const DAI_ADDRESS = '0xea88bdf6917e7e001cb9450e8df08164d75c965e';
 
-// 0 is token reserves, 1 is weth reserves
-export function getWethPairReserves(token: Address, tokenDecimals: i32): BigDecimal[] {
-  let sorted = sortTokens(token, Address.fromString(WETH_ADDRESS))
-  let ret = new Array<BigDecimal>()
-  let pairAddress = getPairAddress(token, Address.fromString(WETH_ADDRESS))
+// Returns the reserves for the pair between token<->quoteToken as [tokenReserves, quoteTokenReserves]
+export function getPairReserves(
+  token: Address,
+  tokenDecimals: i32,
+  quoteToken: Address,
+  quoteTokenDecimals: i32
+): BigDecimal[] {
+  let sorted = sortTokens(token, quoteToken);
+  let pairAddress = getPairAddress(token, quoteToken)
   let pair = PairContract.bind(pairAddress)
   let reserves = pair.getReserves()
+  let ret = new Array<BigDecimal>()
+  log.warning('Getting token prices, token: {}, sorted_0: {}', [token.toHexString(), sorted[0].toHexString()])
+  log.warning('Getting token prices, sorted_1: {}', [sorted[1].toHexString()])
   if (sorted[0].toHexString() == token.toHexString()) {
+    log.warning('Got token == 0', [])
     ret.push(convertTokenToDecimal(reserves.value0, tokenDecimals))
-    ret.push(convertEthToDecimal(reserves.value1))
+    ret.push(convertTokenToDecimal(reserves.value1, quoteTokenDecimals))
   } else {
+    log.warning('Got token == 1', [])
     ret.push(convertTokenToDecimal(reserves.value1, tokenDecimals))
-    ret.push(convertEthToDecimal(reserves.value0))
+    ret.push(convertTokenToDecimal(reserves.value0, quoteTokenDecimals))
+
   }
-  return ret
+  return ret;
 }
 
-export function getEthPriceUSD(): BigDecimal {
-  let daiReserves = getWethPairReserves(Address.fromString(DAI_ADDRESS), 18)
-  let ethPrice = daiReserves[1].div(daiReserves[0])
-  return ethPrice
+// Returns the price of `token` in terms of `quoteToken`
+export function getTokenPrice(
+  token: Address,
+  tokenDecimals: i32,
+  quoteToken: Address,
+  quoteTokenDecimals: i32
+): BigDecimal {
+  let reserves = getPairReserves(token, tokenDecimals, quoteToken, quoteTokenDecimals);
+  // Price of token is quoteReserves / tokenReserves
+  return reserves[1].div(reserves[0]);
+}
+
+// Returns the price of ether in terms of DAI
+export function getEthPriceUsd(): BigDecimal {
+  return getTokenPrice(
+    Address.fromString(WETH_ADDRESS),
+    18,
+    Address.fromString(DAI_ADDRESS),
+    18
+  );
+}
+
+// Returns the price of DAI in terms of ether
+export function getUsdPriceEth(): BigDecimal {
+  return getTokenPrice(
+    Address.fromString(DAI_ADDRESS),
+    18,
+    Address.fromString(WETH_ADDRESS),
+    18
+  );
 }
 
 // Address, tokenDecimals: BigInt
 export function getTokenPriceUSD(token: Token): BigDecimal {
-  let reserves = getWethPairReserves(Address.fromString(token.id), token.decimals)
-  let tokenPriceETH = reserves[0].div(reserves[1])
-  let ethPriceUSD = getEthPriceUSD()
-  return tokenPriceETH.times(ethPriceUSD)
+  // Get the price of the token in terms of eth
+  let tokenPriceEth = getTokenPrice(
+    Address.fromString(token.id),
+    token.decimals,
+    Address.fromString(WETH_ADDRESS),
+    18
+  );
+  let ethPriceUsd = getEthPriceUsd();
+  return tokenPriceEth.times(ethPriceUsd);
 }
