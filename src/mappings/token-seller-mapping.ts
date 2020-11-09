@@ -1,6 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
-import { TokenForSale, TokenSeller } from "../generated/schema";
-import { NewTokensToSell, PremiumPercentSet, SwappedTokens } from "../generated/templates/UnboundTokenSeller/UnboundTokenSeller";
+import { TokenForSale, TokenSeller } from "../../generated/schema";
+import { NewTokensToSell, PremiumPercentSet, SwappedTokens } from "../../generated/templates/UnboundTokenSeller/UnboundTokenSeller";
 
 function joinHyphen(a: Address, b: Address): string {
   return a.toHexString().concat('-').concat(b.toHexString());

@@ -1,5 +1,5 @@
-import { ProposalCreated, ProposalQueued, ProposalCanceled, ProposalExecuted, VoteCast } from '../generated/GovernorAlpha/GovernorAlpha';
-import { Proposal, Vote } from '../generated/schema';
+import { ProposalCreated, ProposalQueued, ProposalCanceled, ProposalExecuted, VoteCast } from '../../generated/GovernorAlpha/GovernorAlpha';
+import { Proposal, Vote } from '../../generated/schema';
 import { BigInt, Bytes, Address } from '@graphprotocol/graph-ts';
 
 export function createProposal(event: ProposalCreated): void {

@@ -1,5 +1,5 @@
-import { Ndx, Transfer, DelegateChanged, DelegateVotesChanged } from '../generated/Ndx/Ndx';
-import { DailyDistributionSnapshot } from '../generated/schema';
+import { Ndx, Transfer, DelegateChanged, DelegateVotesChanged } from '../../generated/Ndx/Ndx';
+import { DailyDistributionSnapshot } from '../../generated/schema';
 import { BigInt, Bytes, Address, log } from '@graphprotocol/graph-ts';
 
 const ONE_DAY = 86400;

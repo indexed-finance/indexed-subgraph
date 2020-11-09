@@ -4,24 +4,26 @@ import {
   PoolInitializer as Initializer,
   InitializerToken,
   TokenSeller
-} from '../generated/schema';
-import { CategoryAdded, CategorySorted, MarketCapSqrtController, TokenAdded } from '../generated/MarketCapSqrtController/MarketCapSqrtController';
-import { Category, Token } from '../generated/schema';
+} from '../../generated/schema';
+import { CategoryAdded, CategorySorted, MarketCapSqrtController, TokenAdded } from '../../generated/MarketCapSqrtController/MarketCapSqrtController';
+import { Category, Token } from '../../generated/schema';
 
-import { IPool, PoolInitializer, UnboundTokenSeller } from '../generated/templates';
+import { IPool, PoolInitializer, UnboundTokenSeller } from '../../generated/templates';
 
-import { UnboundTokenSeller as SellerContract } from '../generated/templates/UnboundTokenSeller/UnboundTokenSeller';
-import { IPool as IPoolContract } from '../generated/templates/IPool/IPool';
-import { IERC20 } from '../generated/templates/IPool/IERC20';
-import { PoolInitializer as PoolInitializerContract } from '../generated/templates/PoolInitializer/PoolInitializer';
+import { UnboundTokenSeller as SellerContract } from '../../generated/templates/UnboundTokenSeller/UnboundTokenSeller';
+import { IPool as IPoolContract } from '../../generated/templates/IPool/IPool';
+import { PoolInitializer as PoolInitializerContract } from '../../generated/templates/PoolInitializer/PoolInitializer';
 
 import {
   NewPoolInitializer,
   PoolInitialized
-} from '../generated/MarketCapSqrtController/MarketCapSqrtController';
+} from '../../generated/MarketCapSqrtController/MarketCapSqrtController';
 
-import { BigInt } from '@graphprotocol/graph-ts';
-import { hexToDecimal, getDecimals, getName, getSymbol } from './helpers';
+import { BigInt, Bytes, log } from '@graphprotocol/graph-ts';
+import { hexToDecimal } from "../helpers/general";
+import { fetchTokenDecimals, fetchTokenName, fetchTokenSymbol } from '../helpers/uniswap';
+import { ZERO_BD } from '../helpers/general'
+import { getTokenPriceUSD } from '../helpers/pricing';
 
 export function handleNewCategory(event: CategoryAdded): void {
   let category = new Category(event.params.categoryID.toHexString());
@@ -37,6 +39,10 @@ export function handleTokenAdded(event: TokenAdded): void {
   let token = Token.load(tokenAddress);
   if (token == null) {
     token = new Token(tokenAddress);
+    token.decimals = fetchTokenDecimals(event.params.token);
+    token.name = fetchTokenName(event.params.token);
+    token.symbol = fetchTokenSymbol(event.params.token);
+    token.priceUSD = getTokenPriceUSD(token as Token)
     token.save();
   }
   if (category.tokens == null) category.tokens = [];
@@ -86,11 +92,6 @@ export function handleNewPool(event: NewPoolInitializer): void {
     token.balance = new BigInt(0);
     token.targetBalance = desiredAmounts[i];
     token.amountRemaining = desiredAmounts[i];
-    token.address = tokenAddress;
-    let ierc20 = IERC20.bind(tokenAddress);
-    token.decimals = getDecimals(ierc20);
-    token.name = getName(ierc20);
-    token.symbol = getSymbol(ierc20);
     token.save();
   }
   initializer.save();
@@ -103,11 +104,15 @@ export function handleNewPool(event: NewPoolInitializer): void {
   pool.totalWeight = new BigInt(0);
   pool.totalSupply = new BigInt(0);
   pool.maxTotalSupply = new BigInt(0);
-  pool.feesTotal = new BigInt(0);
+  pool.feesTotalUSD = ZERO_BD
+  pool.totalValueLockedUSD = ZERO_BD
   pool.isPublic = false;
   pool.initialized = false;
   pool.name = ipool.name();
   pool.symbol = ipool.symbol();
+  pool.tokensList = new Array<Bytes>()
+  let swapFee = ipool.getSwapFee()
+  pool.swapFee = hexToDecimal(swapFee.toHexString(), 18);
   pool.save();
 }
 
@@ -136,6 +141,7 @@ export function handlePoolInitialized(event: PoolInitialized): void {
   let swapFee = ipool.getSwapFee();
   pool.swapFee = hexToDecimal(swapFee.toHexString(), 18);
   // Set up the pool tokens
+  let tokensList = new Array<Bytes>()
   let tokens = ipool.getCurrentTokens();
   for (let i = 0; i < tokens.length; i++) {
     let tokenAddress = tokens[i];
@@ -151,12 +157,9 @@ export function handlePoolInitialized(event: PoolInitialized): void {
     token.desiredDenorm = record.desiredDenorm;
     token.balance = record.balance;
     token.pool = poolAddress.toHexString();
-    token.address = tokenAddress;
-    let ierc20 = IERC20.bind(tokenAddress);
-    token.decimals = getDecimals(ierc20);
-    token.name = getName(ierc20);
-    token.symbol = getSymbol(ierc20);
     token.save();
+    tokensList.push(tokenAddress)
   }
+  pool.tokensList = tokensList;
   pool.save();
 }

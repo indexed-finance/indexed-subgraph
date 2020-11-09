@@ -1,6 +1,6 @@
-import { NdxStakingPool } from "../generated/schema";
-import { RewardPaid, Staked, StakingRewards, Withdrawn } from "../generated/templates/StakingRewards/StakingRewards";
-import { RewardAdded } from "../generated/templates/StakingRewards/StakingRewards";
+import { NdxStakingPool } from "../../generated/schema";
+import { RewardPaid, Staked, StakingRewards, Withdrawn } from "../../generated/templates/StakingRewards/StakingRewards";
+import { RewardAdded } from "../../generated/templates/StakingRewards/StakingRewards";
 
 import { BigInt, Address } from "@graphprotocol/graph-ts";
 

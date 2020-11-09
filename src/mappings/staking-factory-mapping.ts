@@ -1,7 +1,7 @@
 import { BigInt } from "@graphprotocol/graph-ts";
-import { NdxStakingPool } from "../generated/schema";
-import { IndexPoolStakingRewardsAdded, StakingRewardsFactory, UniswapStakingRewardsAdded } from "../generated/StakingRewardsFactory/StakingRewardsFactory";
-import { StakingRewards } from "../generated/templates";
+import { NdxStakingPool } from "../../generated/schema";
+import { IndexPoolStakingRewardsAdded, StakingRewardsFactory, UniswapStakingRewardsAdded } from "../../generated/StakingRewardsFactory/StakingRewardsFactory";
+import { StakingRewards } from "../../generated/templates";
 
 export function handleIndexPoolRewardsAdded(event: IndexPoolStakingRewardsAdded): void {
   StakingRewards.create(event.params.stakingRewards);
