@@ -124,6 +124,7 @@ type DailyPoolSnapshot @entity {
   feesTotalUSD: BigDecimal!
   totalValueLockedUSD: BigDecimal!
   totalSwapVolumeUSD: BigDecimal!
+  totalSupply: BigDecimal!
   tokens: [Bytes!]!
   balances: [BigInt!]!
   denorms: [BigInt!]!
