@@ -2,7 +2,7 @@ import { LOG_DENORM_UPDATED, LOG_DESIRED_DENORM_SET, LOG_SWAP, LOG_JOIN, LOG_EXI
 import { PoolUnderlyingToken, IndexPoolBalance, DailyPoolSnapshot, IndexPool, Swap, Token } from "../../generated/schema";
 import { Address, ethereum, BigInt, log, Bytes } from "@graphprotocol/graph-ts";
 import { LOG_MAX_TOKENS_UPDATED, LOG_MINIMUM_BALANCE_UPDATED, LOG_SWAP_FEE_UPDATED } from "../../generated/templates/IPool/IPool";
-import { hexToDecimal, joinHyphen, ZERO_BI } from "../helpers/general";
+import { convertEthToDecimal, hexToDecimal, joinHyphen, ZERO_BI } from "../helpers/general";
 import { getTokenPriceUSD } from "../helpers/pricing";
 import { convertTokenToDecimal, ZERO_BD } from "../helpers/general";
 
@@ -43,7 +43,7 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
   let snapshot = new DailyPoolSnapshot(poolDayID);
 
   snapshot.pool = event.address.toHexString();
-  snapshot.timestamp = timestamp;
+  snapshot.date = timestamp;
   let balances = new Array<BigInt>()
   let denorms = new Array<BigInt>()
   let desiredDenorms = new Array<BigInt>()
@@ -70,7 +70,10 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
 
   pool.totalValueLockedUSD = totalValueLockedUSD
   pool.save()
-
+  let totalSupply = convertEthToDecimal(pool.totalSupply);
+  let value = pool.totalValueLockedUSD.div(totalSupply);
+  snapshot.value = value;
+  snapshot.totalSupply = totalSupply
   snapshot.feesTotalUSD = pool.feesTotalUSD
   snapshot.totalValueLockedUSD = pool.totalValueLockedUSD
   snapshot.totalSwapVolumeUSD = pool.totalSwapVolumeUSD
