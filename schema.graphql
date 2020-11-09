@@ -120,11 +120,12 @@ type PoolUnderlyingToken @entity {
 
 type DailyPoolSnapshot @entity {
   id: ID!
-  timestamp: Int!
+  date: Int!
   feesTotalUSD: BigDecimal!
   totalValueLockedUSD: BigDecimal!
   totalSwapVolumeUSD: BigDecimal!
   totalSupply: BigDecimal!
+  value: BigDecimal!
   tokens: [Bytes!]!
   balances: [BigInt!]!
   denorms: [BigInt!]!
