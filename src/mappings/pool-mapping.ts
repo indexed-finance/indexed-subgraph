@@ -30,7 +30,7 @@ function loadIndexPoolBalance(poolAddress: Address, ownerAddress: Address): Inde
 
 function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
   let timestamp = event.block.timestamp.toI32();
-  let dayID = timestamp / 86400;
+  let dayID = timestamp / 3600;
   let poolDayID = event.address
     .toHexString()
     .concat('-')
@@ -43,7 +43,7 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
   let snapshot = new DailyPoolSnapshot(poolDayID);
 
   snapshot.pool = event.address.toHexString();
-  snapshot.date = timestamp;
+  snapshot.date = dayID * 3600;
   let balances = new Array<BigInt>()
   let denorms = new Array<BigInt>()
   let desiredDenorms = new Array<BigInt>()
