@@ -8,9 +8,9 @@ dataSources:
     name: MarketCapSqrtController
     network: rinkeby
     source:
-      address: '0xABCc7CE99c961cA06D1Cd714228765b9526a669d'
+      address: '0x19ef5269de76bf1165273FA13de3BB4A48f099b2'
       abi: MarketCapSqrtController
-      startBlock: 7494196
+      startBlock: 7505343
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -31,6 +31,10 @@ dataSources:
           file: ./abis/UnboundTokenSeller.json
         - name: IERC20
           file: ./abis/IERC20.json
+        - name: Pair
+          file: ./abis/Pair.json
+        - name: Factory
+          file: ./abis/Factory.json
       eventHandlers:
         - event: NewPoolInitializer(address,address,uint256,uint256)
           handler: handleNewPool
@@ -42,7 +46,7 @@ dataSources:
           handler: handleTokenAdded
         - event: CategorySorted(uint256)
           handler: handleCategorySorted
-      file: ./src/controller-mapping.ts
+      file: ./src/mappings/controller-mapping.ts
   - kind: ethereum/contract
     name: GovernorAlpha
     network: rinkeby
@@ -71,7 +75,7 @@ dataSources:
           handler: queueProposal
         - event: ProposalExecuted(uint256)
           handler: executeProposal
-      file: ./src/dao-mapping.ts
+      file: ./src/mappings/dao-mapping.ts
   - kind: ethereum/contract
     name: Ndx
     network: rinkeby
@@ -95,7 +99,7 @@ dataSources:
           handler: handleDelegateVoteChange
         - event: DelegateChanged(indexed address,indexed address,indexed address)
           handler: handleDelegateChanged
-      file: ./src/token-mapping.ts
+      file: ./src/mappings/ndx-mapping.ts
   - kind: ethereum/contract
     name: StakingRewardsFactory
     network: rinkeby
@@ -117,7 +121,7 @@ dataSources:
           handler: handleIndexPoolRewardsAdded
         - event: UniswapStakingRewardsAdded(address,address,address)
           handler: handleUniswapStakingRewardsAdded
-      file: ./src/staking-factory-mapping.ts
+      file: ./src/mappings/staking-factory-mapping.ts
 templates:
   - name: UnboundTokenSeller
     kind: ethereum/contract
@@ -144,7 +148,7 @@ templates:
           handler: handleNewTokensToSell
         - event: SwappedTokens(indexed address,indexed address,uint256,uint256)
           handler: handleTokenSwap
-      file: ./src/token-seller-mapping.ts
+      file: ./src/mappings/token-seller-mapping.ts
   - name: PoolInitializer
     kind: ethereum/contract
     network: rinkeby
@@ -171,7 +175,7 @@ templates:
           handler: handleTokensContributed
         - event: TokensClaimed(address,uint256)
           handler: handleTokensClaimed
-      file: ./src/initializer-mapping.ts
+      file: ./src/mappings/initializer-mapping.ts
   - name: IPool
     kind: ethereum/contract
     network: rinkeby
@@ -191,6 +195,10 @@ templates:
           file: ./abis/IPool.json
         - name: IERC20
           file: ./abis/IERC20.json
+        - name: Pair
+          file: ./abis/Pair.json
+        - name: Factory
+          file: ./abis/Factory.json
       eventHandlers:
         - event: LOG_SWAP(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleSwap
@@ -216,7 +224,7 @@ templates:
           handler: handleSwapFeeUpdated
         - event: LOG_MAX_TOKENS_UPDATED(uint256)
           handler: handleMaxTokensUpdated
-      file: ./src/pool-mapping.ts
+      file: ./src/mappings/pool-mapping.ts
   - name: StakingRewards
     kind: ethereum/contract
     network: rinkeby
@@ -240,4 +248,33 @@ templates:
           handler: handleWithdrawn
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
-      file: ./src/staking-mapping.ts
+      file: ./src/mappings/staking-mapping.ts
+  # - name: Pair
+  #   kind: ethereum/contract
+  #   network: rinkeby
+  #   source:
+  #     abi: Pair
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.3
+  #     language: wasm/assemblyscript
+  #     file: ./src/mappings/uniswap-pair.ts
+  #     entities:
+  #       - Pair
+  #       - Token
+  #     abis:
+  #       - name: Pair
+  #         file: ./abis/Pair.json
+  #       - name: Factory
+  #         file: ./abis/Factory.json
+  #       - name: IERC20
+  #         file: ./abis/IERC20.json
+  #     eventHandlers:
+  #       - event: Mint(indexed address,uint256,uint256)
+  #         handler: handleMint
+  #       - event: Burn(indexed address,uint256,uint256,indexed address)
+  #         handler: handleBurn
+  #       - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+  #         handler: handleSwap
+  #       - event: Sync(uint112,uint112)
+  #         handler: handleSync
