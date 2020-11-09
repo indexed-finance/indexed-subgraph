@@ -106,6 +106,7 @@ export function handleNewPool(event: NewPoolInitializer): void {
   pool.maxTotalSupply = new BigInt(0);
   pool.feesTotalUSD = ZERO_BD
   pool.totalValueLockedUSD = ZERO_BD
+  pool.totalSwapVolumeUSD = ZERO_BD
   pool.isPublic = false;
   pool.initialized = false;
   pool.name = ipool.name();

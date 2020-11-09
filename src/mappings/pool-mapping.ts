@@ -44,31 +44,36 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
 
   snapshot.pool = event.address.toHexString();
   snapshot.timestamp = timestamp;
-  snapshot.balances = new Array<BigInt>()
-  snapshot.denorms = new Array<BigInt>()
-  snapshot.desiredDenorms = new Array<BigInt>()
-  snapshot.tokens = new Array<Bytes>()
+  let balances = new Array<BigInt>()
+  let denorms = new Array<BigInt>()
+  let desiredDenorms = new Array<BigInt>()
+  let tokens = new Array<Bytes>()
 
   let totalValueLockedUSD = ZERO_BD
 
   for (let i = 0 as i32; i < tokenAddresses.length; i++) {
     let tokenAddress = tokenAddresses[i]
     let poolToken = loadUnderlyingToken(Address.fromString(pool.id), tokenAddress as Address) as PoolUnderlyingToken
-    snapshot.balances.push(poolToken.balance)
-    snapshot.denorms.push(poolToken.denorm)
-    snapshot.desiredDenorms.push(poolToken.desiredDenorm)
-    snapshot.tokens.push(tokenAddress)
+    balances.push(poolToken.balance)
+    denorms.push(poolToken.denorm)
+    desiredDenorms.push(poolToken.desiredDenorm)
+    tokens.push(tokenAddress)
     let token = Token.load(tokenAddress.toHexString())
     let balance = convertTokenToDecimal(poolToken.balance, token.decimals)
     let value = balance.times(token.priceUSD)
     totalValueLockedUSD = totalValueLockedUSD.plus(value)
   }
+  snapshot.balances = balances;
+  snapshot.denorms = denorms;
+  snapshot.desiredDenorms = desiredDenorms;
+  snapshot.tokens = tokens;
 
   pool.totalValueLockedUSD = totalValueLockedUSD
   pool.save()
 
   snapshot.feesTotalUSD = pool.feesTotalUSD
   snapshot.totalValueLockedUSD = pool.totalValueLockedUSD
+  snapshot.totalSwapVolumeUSD = pool.totalSwapVolumeUSD
   snapshot.save();
 }
 
@@ -102,6 +107,7 @@ export function handleSwap(event: LOG_SWAP): void {
   let swapValue = tokenAmountOutDecimal.times(tokenOut.priceUSD)
   let swapFeeValue = swapValue.times(pool.swapFee)
   pool.feesTotalUSD = pool.feesTotalUSD.plus(swapFeeValue)
+  pool.totalSwapVolumeUSD = pool.totalSwapVolumeUSD.plus(swapValue)
   updateDailySnapshot(pool as IndexPool, event);
 
   let swapID = joinHyphen([
