@@ -46,14 +46,10 @@ export function getPairReserves(
   let pair = PairContract.bind(pairAddress)
   let reserves = pair.getReserves()
   let ret = new Array<BigDecimal>()
-  log.warning('Getting token prices, token: {}, sorted_0: {}', [token.toHexString(), sorted[0].toHexString()])
-  log.warning('Getting token prices, sorted_1: {}', [sorted[1].toHexString()])
   if (sorted[0].toHexString() == token.toHexString()) {
-    log.warning('Got token == 0', [])
     ret.push(convertTokenToDecimal(reserves.value0, tokenDecimals))
     ret.push(convertTokenToDecimal(reserves.value1, quoteTokenDecimals))
   } else {
-    log.warning('Got token == 1', [])
     ret.push(convertTokenToDecimal(reserves.value1, tokenDecimals))
     ret.push(convertTokenToDecimal(reserves.value0, quoteTokenDecimals))
 
