@@ -1,7 +1,7 @@
 import { log, BigInt, Address, Bytes } from '@graphprotocol/graph-ts'
-import { IERC20 } from '../../generated/templates/Pair/IERC20'
-import { Factory as FactoryContract } from '../../generated/templates/Pair/Factory'
-import { 
+import { IERC20 } from '../../generated/templates/IPool/IERC20'
+import { Factory as FactoryContract } from '../../generated/templates/IPool/Factory'
+import {
   fetchTokenSymbolFromTokenList,
   fetchTokenNameFromTokenList,
   fetchTokenDecimalsFromTokenList,
@@ -30,7 +30,7 @@ export function sortTokens(tokenA: Address, tokenB: Address): Address[] {
 export function getPairAddress(tokenA: Address, tokenB: Address): Address {
   let sorted = sortTokens(tokenA, tokenB)
   let pairAddress = factoryContract.getPair(sorted[0], sorted[1])
-  
+
   // Not handled because all tokens in current subgraph necessarily have an eth pair
   // if (pairAddress.toHexString() == ADDRESS_ZERO) {
   //   return null

@@ -8,13 +8,18 @@ const NA = '0x0000000000000000000000000000000000000000';
 export function handleDelegateChanged(event: DelegateChanged): void {
   let timestamp = event.block.timestamp.toI32();
   let snapshot = initialiseSnapshot(timestamp);
+  let to = event.params.toDelegate.toHexString();
+  let from = event.params.fromDelegate.toHexString();
+  let delegator = event.params.delegator.toHexString();
   let contract = Ndx.bind(event.address);
   let votes = contract.balanceOf(event.params.delegator);
 
-  // Adding newly delegated addresses inactive balances to the active mapping
-  if(event.params.fromDelegate.toHexString() == NA){
-    snapshot.inactive = snapshot.inactive.minus(votes);
-    snapshot.active = snapshot.active.plus(votes);
+  if(from != to){
+    if(from == NA){
+      snapshot.inactive = snapshot.inactive.minus(votes);
+    } else if(to == NA){
+      snapshot.inactive = snapshot.inactive.plus(votes);
+    }
   }
 
   snapshot.save();
@@ -22,54 +27,69 @@ export function handleDelegateChanged(event: DelegateChanged): void {
 
 export function handleTransfer(event: Transfer): void {
   let timestamp = event.block.timestamp.toI32();
+  let value = event.params.amount;
+
   let contract = Ndx.bind(event.address);
   let snapshot = initialiseSnapshot(timestamp);
   let recipentDelegate = contract.delegates(event.params.to);
   let senderDelegate = contract.delegates(event.params.from);
-  let condition = senderDelegate.toHexString() != recipentDelegate.toHexString()
-  let value = event.params.amount;
-  let result = condition ? 'true' : 'false'
+  let sender = senderDelegate.toHexString();
+  let recipent = recipentDelegate.toHexString();
+  let notEqual = sender != recipent;
 
-  // log.info('sender: {}', [ senderDelegate.toHexString() ])
-  // log.info('from: {}', [ event.params.from.toHexString() ])
-  // log.info('amount: {}', [ value.toString() ])
-  // log.info('condition: {}', [ result ])
-  // log.info('id: {}', [ snapshot.id ])
-
-  // Genesis mint creates the entry value in the inactive class
   if(event.params.from.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.plus(value);
-  } else if(condition){
-    // Active addreses = delegated address == msg.sender
-    // Inactive address = delegated address == address(0x0)
-    // Delegated address = delegated adress != msg.sender
-
-    // Therefore the possible outcomes need to be programmed:
-    // A active address transfers to an inactive address (-active, +inactive)
-    // A inactive address transfers to an active address (-inactive, +active)
-    // A active address transfers to an delegated address (-active, +delegated)
-    // A inactive address transfers to an delegated address (-inactive, +delegated)
-    // A delegated address transfers to an active address (-delegated, +active)
-    // A delegated address transfers to an inactive address (-delegated, +inactive)
+  } else if(notEqual){
+    if(recipent == NA){
+      snapshot.inactive = snapshot.inactive.plus(value);
+    } else if(sender == NA) {
+      snapshot.inactive = snapshot.inactive.minus(value);
     }
-    snapshot.save();
   }
+  snapshot.save();
+}
 
 export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let timestamp = event.block.timestamp.toI32();
+  let prevBalance = event.params.previousBalance;
+  let newBalance = event.params.newBalance;
+  let block = event.block.number.toI32();
   let contract = Ndx.bind(event.address);
-  let delegate = contract.delegates(event.params.delegate);
+  let caller = event.params.delegate;
+  let difference = BigInt.fromI32(0);
+
   let snapshot = initialiseSnapshot(timestamp);
-  let balance = contract.balanceOf(event.params.delegate);
+  let delegate = contract.delegates(caller);
+  let isActive = delegate.toHexString() == caller.toHexString();
+  let result = isActive ? 'true' : 'false';
+  let balance = contract.balanceOf(caller);
+  let votes = contract.getPriorVotes(
+    caller, BigInt.fromI32(block - 1)
+  );
 
-  // log.info('delegate: {}', [ delegate.toHexString() ])
-  // log.info('sender: {}', [ event.params.delegate.toHexString() ])
-
-  // Event triggers whenever an active address (aka active or delegated) and
-  // updates the delegates current mapping, this is triggered on every transfer so
-  // implementing logic here can complicate logic (as you can't account for inactive).
-  // As whenever someone delegates an address it also fires, but you could use
-  // getPriorvotes to validte whether they had a delegated balance beforehand (aka 0 = inactive).
+  if(votes == BigInt.fromI32(0) && isActive){
+    snapshot.active = snapshot.active.plus(balance);
+  } else {
+    if(isActive){
+      if(prevBalance > newBalance){
+        difference = prevBalance.minus(newBalance);
+        difference = snapshot.active.minus(difference);
+      } else {
+        difference = newBalance.minus(prevBalance);
+        difference = snapshot.active.plus(difference);
+      }
+      snapshot.active = difference;
+    } else {
+      if(prevBalance > newBalance){
+        difference = prevBalance.minus(newBalance);
+        difference = snapshot.delegated.minus(difference);
+      } else {
+        difference = newBalance.minus(prevBalance);
+        difference = snapshot.delegated.plus(difference);
+      }
+      snapshot.delegated = difference;
+    }
+  }
 
   snapshot.save()
 }
@@ -82,17 +102,15 @@ function initialiseSnapshot(timestamp: i32): DailyDistributionSnapshot {
   let newSnapshot = DailyDistributionSnapshot.load(eventTimestamp.toString());
   let oldSnapshot = DailyDistributionSnapshot.load(previousTimestamp.toString());
 
-  // Possible problems with this as it only creates a limited number of records
-  // the idea is to find the last recorded entry (using id) for that entity
-  for(let x = 1; x < 14; x++){
-    if(oldSnapshot != null) break;
-
-    previousId = previousId - x;
-    previousTimestamp = BigInt.fromI32(previousId);
-    oldSnapshot = DailyDistributionSnapshot.load(previousTimestamp.toString());
-  } if(newSnapshot == null){
+  if(newSnapshot == null){
+    for(let x = 1; x < 14; x++){
+      if(oldSnapshot == null){
+        previousId = previousId - x;
+        previousTimestamp = BigInt.fromI32(previousId);
+        oldSnapshot = DailyDistributionSnapshot.load(previousTimestamp.toString());
+      }
+    }
     if(oldSnapshot != null){
-      dayId = previousId + 1;
       eventTimestamp = BigInt.fromI32(dayId);
       newSnapshot = new DailyDistributionSnapshot(eventTimestamp.toString());
       newSnapshot.active = oldSnapshot.active;

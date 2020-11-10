@@ -1,7 +1,7 @@
 import { BigDecimal, Address, log } from '@graphprotocol/graph-ts'
 import { getPairAddress, sortTokens } from './uniswap'
 import { convertTokenToDecimal, convertEthToDecimal } from './general'
-import { Pair as PairContract } from '../../generated/templates/Pair/Pair'
+import { Pair as PairContract } from '../../generated/templates/IPool/Pair'
 import { Token } from '../../generated/schema';
 
 /*
