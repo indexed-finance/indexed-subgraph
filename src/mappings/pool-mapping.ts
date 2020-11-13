@@ -5,6 +5,7 @@ import { LOG_MAX_TOKENS_UPDATED, LOG_MINIMUM_BALANCE_UPDATED, LOG_SWAP_FEE_UPDAT
 import { convertEthToDecimal, hexToDecimal, joinHyphen, ZERO_BI } from "../helpers/general";
 import { getTokenPriceUSD } from "../helpers/pricing";
 import { convertTokenToDecimal, ZERO_BD } from "../helpers/general";
+import { ADDRESS_ZERO } from '../helpers/uniswap';
 
 function loadUnderlyingToken(poolAddress: Address, tokenAddress: Address): PoolUnderlyingToken {
   let tokenID = joinHyphen([poolAddress.toHexString(), tokenAddress.toHexString()]);
@@ -177,8 +178,8 @@ export function handleDesiredDenormSet(event: LOG_DESIRED_DENORM_SET): void {
 
 export function handleTransfer(event: Transfer): void {
   let pool = IndexPool.load(event.address.toHexString()) as IndexPool
-  let isMint = event.params.src.toHexString() == `0x${'00'.repeat(20)}`;
-  let isBurn = event.params.dst.toHexString() == `0x${'00'.repeat(20)}`;
+  let isMint = event.params.src.toHexString() == ADDRESS_ZERO;
+  let isBurn = event.params.dst.toHexString() == ADDRESS_ZERO;
   if (isMint) {
     pool.totalSupply = pool.totalSupply.plus(event.params.amt);
     pool.save();
