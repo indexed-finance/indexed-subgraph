@@ -132,6 +132,8 @@ export function handleJoin(event: LOG_JOIN): void {
   let tokenIn = loadUnderlyingToken(event.address, event.params.tokenIn);
   tokenIn.balance = tokenIn.balance.plus(event.params.tokenAmountIn);
   tokenIn.save();
+  let pool = IndexPool.load(event.address.toHexString()) as IndexPool;
+
 }
 
 export function handleExit(event: LOG_EXIT): void {
@@ -157,6 +159,8 @@ export function handleDenormUpdated(event: LOG_DENORM_UPDATED): void {
   token.denorm = event.params.newDenorm;
   token.save();
   updateDailySnapshot(pool, event);
+  updateTokenPrices(pool as IndexPool);
+  updateDailySnapshot(pool as IndexPool, event);
 }
 
 export function handleDesiredDenormSet(event: LOG_DESIRED_DENORM_SET): void {
@@ -164,6 +168,7 @@ export function handleDesiredDenormSet(event: LOG_DESIRED_DENORM_SET): void {
   token.desiredDenorm = event.params.desiredDenorm;
   token.save();
   let pool = IndexPool.load(event.address.toHexString()) as IndexPool;
+  updateTokenPrices(pool as IndexPool);
   updateDailySnapshot(pool, event);
 }
 
@@ -188,6 +193,8 @@ export function handleTransfer(event: Transfer): void {
   if (isBurn || isMint) {
     pool.save();
   }
+  updateTokenPrices(pool as IndexPool);
+  updateDailySnapshot(pool, event);
 }
 
 export function handleTokenRemoved(event: LOG_TOKEN_REMOVED): void {
@@ -226,6 +233,8 @@ export function handleMaxTokensUpdated(event: LOG_MAX_TOKENS_UPDATED): void {
   let pool = IndexPool.load(event.address.toHexString());
   pool.maxTotalSupply = event.params.maxPoolTokens;
   pool.save();
+  updateTokenPrices(pool as IndexPool);
+  updateDailySnapshot(pool as IndexPool, event);
 }
 
 export function handleSwapFeeUpdated(event: LOG_SWAP_FEE_UPDATED): void {
@@ -233,4 +242,6 @@ export function handleSwapFeeUpdated(event: LOG_SWAP_FEE_UPDATED): void {
   let swapFee = hexToDecimal(event.params.swapFee.toHexString(), 18);
   pool.swapFee = swapFee;
   pool.save();
+  updateTokenPrices(pool as IndexPool);
+  updateDailySnapshot(pool as IndexPool, event);
 }
