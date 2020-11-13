@@ -36,7 +36,10 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
     .concat('-')
     .concat(BigInt.fromI32(dayID).toString());
   // If we already have a daily snapshot, don't do anything.
-  if (DailyPoolSnapshot.load(poolDayID) != null) {
+  if (
+    DailyPoolSnapshot.load(poolDayID) != null ||
+    pool.totalSupply.equals(BigInt.fromI32(0))
+  ) {
     return;
   }
   let tokenAddresses = pool.tokensList
@@ -178,6 +181,7 @@ export function handleTransfer(event: Transfer): void {
   let isBurn = event.params.dst.toHexString() == `0x${'00'.repeat(20)}`;
   if (isMint) {
     pool.totalSupply = pool.totalSupply.plus(event.params.amt);
+    pool.save();
   } else {
     let sender = loadIndexPoolBalance(event.address, event.params.src);
     sender.balance = sender.balance.minus(event.params.amt);
@@ -185,13 +189,11 @@ export function handleTransfer(event: Transfer): void {
   }
   if (isBurn) {
     pool.totalSupply = pool.totalSupply.minus(event.params.amt);
+    pool.save();
   } else {
     let receiver = loadIndexPoolBalance(event.address, event.params.dst);
     receiver.balance = receiver.balance.plus(event.params.amt);
     receiver.save();
-  }
-  if (isBurn || isMint) {
-    pool.save();
   }
   updateTokenPrices(pool as IndexPool);
   updateDailySnapshot(pool, event);
