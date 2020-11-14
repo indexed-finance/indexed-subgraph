@@ -51,9 +51,9 @@ dataSources:
     name: GovernorAlpha
     network: rinkeby
     source:
-      address: '0x5220b03Cc2F5f8f38dC647636d71582a38365E72'
+      address: '0x6E64317e50a38F9A06D902978E283295AF9ED6f8'
       abi: GovernorAlpha
-      startBlock: 7178339
+      startBlock: 7548858
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -80,9 +80,9 @@ dataSources:
     name: Ndx
     network: rinkeby
     source:
-      address: '0xe366577a6712591c2e6f76fdcb96a99ac30a74c3'
+      address: '0x2342084BaCed2081093de5729de81FcB9DE77CA6'
       abi: Ndx
-      startBlock: 7178339
+      startBlock: 7548856
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -104,9 +104,9 @@ dataSources:
     name: StakingRewardsFactory
     network: rinkeby
     source:
-      address: '0x48ea38bcd50601594191b9e4edda7490d7a9eb16'
+      address: '0xF53FF1A3962Ea1CCA3F3D90Cb5C22EF3484858b0'
       abi: StakingRewardsFactory
-      startBlock: 7423368
+      startBlock: 7548859
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
