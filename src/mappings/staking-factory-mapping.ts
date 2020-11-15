@@ -32,7 +32,7 @@ export function handleUniswapStakingRewardsAdded(event: UniswapStakingRewardsAdd
   let rewardAmount = rewardsInfo.value2;
   pool.startsAt = factory.stakingRewardsGenesis().toI32();
   pool.isReady = false;
-  pool.isWethPair = false;
+  pool.isWethPair = true;
   pool.indexPool = event.params.indexPool;
   pool.stakingToken = event.params.stakingToken;
   pool.totalSupply = new BigInt(0);
