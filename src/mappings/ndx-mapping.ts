@@ -17,8 +17,10 @@ export function handleDelegateChanged(event: DelegateChanged): void {
   if(from != to){
     if(from == NA){
       snapshot.inactive = snapshot.inactive.minus(votes);
+      snapshot.voters++;
     } else if(to == NA){
       snapshot.inactive = snapshot.inactive.plus(votes);
+      snapshot.voters--;
     }
   }
 
@@ -116,11 +118,13 @@ function initialiseSnapshot(timestamp: i32): DailyDistributionSnapshot {
       newSnapshot.active = oldSnapshot.active;
       newSnapshot.inactive = oldSnapshot.inactive;
       newSnapshot.delegated = oldSnapshot.delegated;
+      newSnapshot.voters = oldSnapshot.voters;
     } else {
       newSnapshot = new DailyDistributionSnapshot(eventTimestamp.toString());
       newSnapshot.active = BigInt.fromI32(0);
       newSnapshot.inactive = BigInt.fromI32(0);
       newSnapshot.delegated = BigInt.fromI32(0);
+      newSnapshot.voters = 0;
     }
     newSnapshot.save()
   }
