@@ -21,6 +21,9 @@ export function handleDelegateChanged(event: DelegateChanged): void {
     } else if(to == NA){
       snapshot.inactive = snapshot.inactive.plus(votes);
       snapshot.voters--;
+    } else if (from == delegator){
+      snapshot.delegated = snapshot.delegated.plus(votes);
+      snapshot.active = snapshot.active.minus(votes);
     }
   }
 
@@ -65,31 +68,38 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let isActive = delegate.toHexString() == caller.toHexString();
   let result = isActive ? 'true' : 'false';
   let balance = contract.balanceOf(caller);
-  let votes = contract.getPriorVotes(
+  let previousVotes = contract.getPriorVotes(
     caller, BigInt.fromI32(block - 1)
   );
+  let currentVotes = contract.getCurrentVotes(caller);
 
-  if(votes == BigInt.fromI32(0) && isActive){
-    snapshot.active = snapshot.active.plus(balance);
+  if(isActive){
+    if(currentVotes != balance) {
+      if(prevBalance <= newBalance){
+        difference = newBalance.minus(prevBalance);
+        snapshot.delegated = snapshot.delegated.plus(difference);
+      } else if(prevBalance > newBalance) {
+        difference = prevBalance.minus(newBalance);
+        snapshot.delegated = snapshot.delegated.minus(difference);
+      }
+    } else if(previousVotes == BigInt.fromI32(0)){
+      snapshot.active = snapshot.active.plus(newBalance);
+    } else if(prevBalance <= newBalance){
+      difference = newBalance.minus(prevBalance);
+      snapshot.active = snapshot.active.plus(difference);
+    } else if(prevBalance > newBalance) {
+      difference = prevBalance.minus(newBalance);
+      snapshot.active = snapshot.active.minus(difference);
+    }
   } else {
-    if(isActive){
-      if(prevBalance > newBalance){
-        difference = prevBalance.minus(newBalance);
-        difference = snapshot.active.minus(difference);
-      } else {
-        difference = newBalance.minus(prevBalance);
-        difference = snapshot.active.plus(difference);
-      }
-      snapshot.active = difference;
-    } else {
-      if(prevBalance > newBalance){
-        difference = prevBalance.minus(newBalance);
-        difference = snapshot.delegated.minus(difference);
-      } else {
-        difference = newBalance.minus(prevBalance);
-        difference = snapshot.delegated.plus(difference);
-      }
-      snapshot.delegated = difference;
+     if(currentVotes == BigInt.fromI32(0)){
+      snapshot.delegated = snapshot.delegated.minus(prevBalance);
+    } else if(prevBalance <= newBalance){
+      difference = newBalance.minus(prevBalance);
+      snapshot.delegated = snapshot.delegated.plus(difference);
+    } else if(prevBalance > newBalance) {
+      difference = prevBalance.minus(newBalance);
+      snapshot.delegated = snapshot.delegated.minus(difference);
     }
   }
 
