@@ -61,7 +61,7 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let block = event.block.number.toI32();
   let contract = Ndx.bind(event.address);
   let caller = event.params.delegate;
-  let difference = BigInt.fromI32(0);
+  let weightDifference = BigInt.fromI32(0);
 
   let snapshot = initialiseSnapshot(timestamp);
   let delegate = contract.delegates(caller);
@@ -74,34 +74,43 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let currentVotes = contract.getCurrentVotes(caller);
 
   if(isActive){
-    if(currentVotes != balance) {
+    if(currentVotes.minus(balance) > BigInt.fromI32(0)) {
+      let votesDelegated = newBalance.minus(balance);
+      let delegatedDifference = BigInt.fromI32(0);
+      let activeBalance = newBalance.minus(votesDelegated);
+
       if(prevBalance <= newBalance){
-        difference = newBalance.minus(prevBalance);
-        snapshot.delegated = snapshot.delegated.plus(difference);
+        delegatedDifference = newBalance.minus(prevBalance);
+
+        snapshot.delegated = snapshot.delegated.plus(delegatedDifference);
       } else if(prevBalance > newBalance) {
-        difference = prevBalance.minus(newBalance);
-        snapshot.delegated = snapshot.delegated.minus(difference);
+        delegatedDifference = prevBalance.minus(newBalance);
+
+        snapshot.delegated = snapshot.delegated.minus(delegatedDifference);
       }
+    } else if(currentVotes == BigInt.fromI32(0)){
+      snapshot.active = snapshot.active.minus(prevBalance);
     } else if(previousVotes == BigInt.fromI32(0)){
       snapshot.active = snapshot.active.plus(newBalance);
     } else if(prevBalance <= newBalance){
-      difference = newBalance.minus(prevBalance);
-      snapshot.active = snapshot.active.plus(difference);
-    } else if(prevBalance > newBalance) {
-      difference = prevBalance.minus(newBalance);
-      snapshot.active = snapshot.active.minus(difference);
+      weightDifference = newBalance.minus(prevBalance);
+      snapshot.active = snapshot.active.plus(weightDifference);
+    } else {
+      weightDifference = prevBalance.minus(newBalance);
+      snapshot.active = snapshot.active.minus(weightDifference);
     }
   } else {
-     if(currentVotes == BigInt.fromI32(0)){
-      snapshot.delegated = snapshot.delegated.minus(prevBalance);
-    } else if(prevBalance <= newBalance){
-      difference = newBalance.minus(prevBalance);
-      snapshot.delegated = snapshot.delegated.plus(difference);
-    } else if(prevBalance > newBalance) {
-      difference = prevBalance.minus(newBalance);
-      snapshot.delegated = snapshot.delegated.minus(difference);
+    if(prevBalance <= newBalance){
+      weightDifference = newBalance.minus(prevBalance);
+      snapshot.delegated = snapshot.delegated.plus(weightDifference);
+    } else {
+      weightDifference = prevBalance.minus(newBalance);
+      snapshot.delegated = snapshot.delegated.minus(weightDifference);
     }
   }
+
+
+
 
   snapshot.save()
 }
