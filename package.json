@@ -18,6 +18,7 @@
   "dependencies": {
     "babel-polyfill": "^6.26.0",
     "babel-register": "^6.26.0",
+    "split2": "^3.2.2",
     "truffle": "^5.1.42",
     "truffle-contract": "^4.0.31",
     "truffle-hdwallet-provider": "^1.0.4"

@@ -79,6 +79,13 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
       let delegatedDifference = BigInt.fromI32(0);
       let activeBalance = newBalance.minus(votesDelegated);
 
+      // Need to figure out a way to detect a user's balance at a specifc block,
+      // as it could verify how much of their balance previous to the event
+      // are delegated to them. As the amount "newBalance" amd "previousBalance"
+      // include votes delegated to a individual + their own token balance.
+      
+      // Solution: Query balanceOf at a block that proceeds the event
+
       if(prevBalance <= newBalance){
         delegatedDifference = newBalance.minus(prevBalance);
 

@@ -98,6 +98,7 @@ type IndexPool @entity {
   feesTotalUSD: BigDecimal!
   totalValueLockedUSD: BigDecimal!
   totalSwapVolumeUSD: BigDecimal!
+  totalVolumeUSD: BigDecimal!
 }
 
 type PoolUnderlyingToken @entity {
@@ -132,6 +133,7 @@ type DailyPoolSnapshot @entity {
   denorms: [BigInt!]!
   desiredDenorms: [BigInt!]!
   pool: IndexPool!
+  totalVolumeUSD: BigDecimal!
 }
 
 type IndexPoolBalance @entity {

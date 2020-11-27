@@ -81,6 +81,7 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
   snapshot.feesTotalUSD = pool.feesTotalUSD
   snapshot.totalValueLockedUSD = pool.totalValueLockedUSD
   snapshot.totalSwapVolumeUSD = pool.totalSwapVolumeUSD
+  snapshot.totalVolumeUSD = pool.totalVolumeUSD
   snapshot.save();
 }
 
@@ -113,10 +114,11 @@ export function handleSwap(event: LOG_SWAP): void {
   let tokenAmountOutDecimal = convertTokenToDecimal(event.params.tokenAmountOut, tokenOut.decimals)
   let swapValue = tokenAmountOutDecimal.times(tokenOut.priceUSD)
   let swapFeeValue = swapValue.times(pool.swapFee)
+
+  updateDailySnapshot(pool as IndexPool, event);
   pool.feesTotalUSD = pool.feesTotalUSD.plus(swapFeeValue)
   pool.totalSwapVolumeUSD = pool.totalSwapVolumeUSD.plus(swapValue)
-  updateDailySnapshot(pool as IndexPool, event);
-
+  pool.totalVolumeUSD = pool.totalVolumeUSD.plus(swapValue)
   let swapID = joinHyphen([
     event.transaction.hash.toHexString(),
     event.logIndex.toHexString()
@@ -129,22 +131,37 @@ export function handleSwap(event: LOG_SWAP): void {
   swap.tokenAmountOut = event.params.tokenAmountOut;
   swap.pool = event.address.toHexString();
   swap.timestamp = event.block.timestamp.toI32();
+  pool.save();
   swap.save();
 }
 
 export function handleJoin(event: LOG_JOIN): void {
   let tokenIn = loadUnderlyingToken(event.address, event.params.tokenIn);
+  let tokenInStore = Token.load(event.params.tokenIn.toHexString());
+  let tokenInDecimal = convertTokenToDecimal(event.params.tokenAmountIn, tokenInStore.decimals);
+  let pool = IndexPool.load(event.address.toHexString()) as IndexPool;
+  let usdValue = tokenInDecimal.times(tokenInStore.priceUSD);
+
   tokenIn.balance = tokenIn.balance.plus(event.params.tokenAmountIn);
   tokenIn.save();
-  let pool = IndexPool.load(event.address.toHexString()) as IndexPool;
-
+  updateDailySnapshot(pool, event);
+  pool.totalVolumeUSD = pool.totalVolumeUSD.plus(usdValue);
+  pool.save();
 }
 
 export function handleExit(event: LOG_EXIT): void {
-  // let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
-  // tokenOut.balance = tokenOut.balance.minus(event.params.tokenAmountOut);
-  // tokenOut.save();
-  // updateDailySnapshot(event);
+  let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
+  let pool = IndexPool.load(event.address.toHexString()) as IndexPool
+  let tokenOutStore = Token.load(event.params.tokenOut.toHexString());
+
+  let tokenOutDecimal = convertTokenToDecimal(event.params.tokenAmountOut, tokenOutStore.decimals);
+  let usdValue = tokenOutDecimal.times(tokenOutStore.priceUSD);
+
+  tokenOut.balance = tokenOut.balance.minus(event.params.tokenAmountOut);
+  tokenOut.save();
+  updateDailySnapshot(pool, event);
+  pool.totalVolumeUSD = pool.totalVolumeUSD.plus(usdValue);
+  pool.save();
 }
 
 export function handleDenormUpdated(event: LOG_DENORM_UPDATED): void {
