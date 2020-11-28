@@ -49,7 +49,7 @@ export function handleTransfer(event: Transfer): void {
   let senderDelegatedWeight = senderWeight.minus(senderBalance);
   let senderActiveWeight = senderBalance.minus(senderDelegatedWeight);
   let recipentActiveWeight = recipentBalance.minus(recipentDelegatedWeight);
-  let notEqual = event.params.from != event.params.to;
+  let notEqual = event.params.from.toHexString() != event.params.to.toHexString();
   let value = event.params.amount;
   let BN_ZERO = BigInt.fromI32(0);
 
@@ -61,38 +61,38 @@ export function handleTransfer(event: Transfer): void {
     } else if(event.params.from.toHexString() == NA) {
       snapshot.inactive = snapshot.inactive.minus(value);
     } else {
-      if(isRecipentActive && recipentDelegatedWeight > BN_ZERO) {
+      if(recipentDelegatedWeight > BN_ZERO) {
         let previousBalance = recipentBalance.minus(value);
         let previousActiveWeight = recipentPreviousWeight.minus(previousBalance);
         let previousDelegatedWeight = recipentPreviousWeight.minus(previousActiveWeight);
-        let balanceDifference = recipentActiveWeight.minus(previousActiveWeight);
         let totalWeightDifferece = recipentWeight.minus(recipentPreviousWeight);
-        let weightDifference = BigInt.fromI32(0);
+        let weightDifference = BN_ZERO;
 
         if(recipentDelegatedWeight > previousDelegatedWeight) {
           weightDifference = recipentDelegatedWeight.minus(previousDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.plus(weightDifference);
+          snapshot.delegated = snapshot.delegated.minus(totalWeightDifferece.plus(weightDifference));
         } else {
           weightDifference = previousDelegatedWeight.minus(recipentDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.minus(weightDifference);
+          snapshot.delegated = snapshot.delegated.plus(totalWeightDifferece.plus(weightDifference));
         }
 
-      } if(isSenderActive && senderDelegatedWeight > BN_ZERO) {
+        snapshot.active = snapshot.active.minus(totalWeightDifferece.plus(value));
+      } if(senderDelegatedWeight > BN_ZERO) {
         let previousBalance = senderBalance.plus(value);
         let previousActiveWeight = senderPreviousWeight.minus(previousBalance);
-        let previousDelegatedWeight = senderActiveWeight.minus(previousActiveWeight);
-        let balanceDifference = previousActiveWeight.minus(senderActiveWeight);
-        let totalWeightDifferece = recipentPreviousWeight.minus(senderWeight);
-        let weightDifference = BigInt.fromI32(0);
+        let previousDelegatedWeight = senderPreviousWeight.minus(previousActiveWeight);
+        let totalWeightDifferece = senderPreviousWeight.minus(senderWeight);
+        let weightDifference = BN_ZERO;
 
-        if(recipentDelegatedWeight > previousDelegatedWeight) {
+        if(senderDelegatedWeight > previousDelegatedWeight) {
           weightDifference = senderDelegatedWeight.minus(previousDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.plus(weightDifference);
+          snapshot.delegated = snapshot.delegated.minus(totalWeightDifferece.plus(weightDifference));
         } else  {
           weightDifference = previousDelegatedWeight.minus(senderDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.minus(weightDifference);
+          snapshot.delegated = snapshot.delegated.plus(totalWeightDifferece.plus(weightDifference));
         }
 
+        snapshot.active = snapshot.active.plus(totalWeightDifferece.plus(value));
       }
     }
   }
@@ -116,20 +116,21 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
     caller, BigInt.fromI32(block - 1)
   );
   let currentVotes = contract.getCurrentVotes(caller);
+  let BN_ZERO =  BigInt.fromI32(0);
 
   if(isActive){
-    if(currentVotes.minus(balance) > BigInt.fromI32(0)) {
+    if(previousVotes == BN_ZERO){
+      snapshot.active = snapshot.active.plus(newBalance);
+    } else if(currentVotes.minus(balance) > BN_ZERO){
       if(prevBalance <= newBalance){
         weightDifference = newBalance.minus(prevBalance);
+        snapshot.delegated = snapshot.delegated.plus(weightDifference);
         snapshot.active = snapshot.active.plus(weightDifference);
       } else {
         weightDifference = prevBalance.minus(newBalance);
+        snapshot.delegated = snapshot.delegated.minus(weightDifference);
         snapshot.active = snapshot.active.minus(weightDifference);
       }
-    } else if(currentVotes == BigInt.fromI32(0)){
-      snapshot.active = snapshot.active.minus(prevBalance);
-    } else if(previousVotes == BigInt.fromI32(0)){
-      snapshot.active = snapshot.active.plus(newBalance);
     } else if(prevBalance <= newBalance){
       weightDifference = newBalance.minus(prevBalance);
       snapshot.active = snapshot.active.plus(weightDifference);
