@@ -71,7 +71,7 @@ export function handleNewPool(event: NewPoolInitializer): void {
   IPool.create(poolAddress);
   PoolInitializer.create(initializerAddress);
 
-  
+
   let initializerContract = PoolInitializerContract.bind(initializerAddress);
 
   // Create the PoolInitializer entity
@@ -107,6 +107,7 @@ export function handleNewPool(event: NewPoolInitializer): void {
   pool.feesTotalUSD = ZERO_BD
   pool.totalValueLockedUSD = ZERO_BD
   pool.totalSwapVolumeUSD = ZERO_BD
+  pool.totalVolumeUSD = ZERO_BD
   pool.isPublic = false;
   pool.initialized = false;
   pool.name = ipool.name();

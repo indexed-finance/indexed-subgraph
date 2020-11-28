@@ -36,23 +36,20 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
     .toHexString()
     .concat('-')
     .concat(BigInt.fromI32(dayID).toString());
-  // If we already have a daily snapshot, don't do anything.
-  if (
-    DailyPoolSnapshot.load(poolDayID) != null ||
-    pool.totalSupply.equals(BigInt.fromI32(0))
-  ) {
-    return;
-  }
-  let tokenAddresses = pool.tokensList
+
+  if(pool.totalSupply == BigInt.fromI32(0)
+    || DailyPoolSnapshot.load(poolDayID) != null) return;
+
   let snapshot = new DailyPoolSnapshot(poolDayID);
 
   snapshot.pool = event.address.toHexString();
   snapshot.date = dayID * 3600;
+
+  let tokenAddresses = pool.tokensList;
   let balances = new Array<BigInt>()
   let denorms = new Array<BigInt>()
   let desiredDenorms = new Array<BigInt>()
   let tokens = new Array<Bytes>()
-
   let totalValueLockedUSD = ZERO_BD
 
   for (let i = 0 as i32; i < tokenAddresses.length; i++) {
@@ -144,24 +141,23 @@ export function handleJoin(event: LOG_JOIN): void {
 
   tokenIn.balance = tokenIn.balance.plus(event.params.tokenAmountIn);
   tokenIn.save();
-  updateDailySnapshot(pool, event);
   pool.totalVolumeUSD = pool.totalVolumeUSD.plus(usdValue);
   pool.save();
+  updateDailySnapshot(pool, event);
 }
 
 export function handleExit(event: LOG_EXIT): void {
   let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
   let pool = IndexPool.load(event.address.toHexString()) as IndexPool
   let tokenOutStore = Token.load(event.params.tokenOut.toHexString());
-
   let tokenOutDecimal = convertTokenToDecimal(event.params.tokenAmountOut, tokenOutStore.decimals);
   let usdValue = tokenOutDecimal.times(tokenOutStore.priceUSD);
 
   tokenOut.balance = tokenOut.balance.minus(event.params.tokenAmountOut);
   tokenOut.save();
-  updateDailySnapshot(pool, event);
   pool.totalVolumeUSD = pool.totalVolumeUSD.plus(usdValue);
   pool.save();
+  updateDailySnapshot(pool, event);
 }
 
 export function handleDenormUpdated(event: LOG_DENORM_UPDATED): void {
