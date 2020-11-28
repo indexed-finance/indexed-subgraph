@@ -32,23 +32,68 @@ export function handleDelegateChanged(event: DelegateChanged): void {
 
 export function handleTransfer(event: Transfer): void {
   let timestamp = event.block.timestamp.toI32();
-  let value = event.params.amount;
-
+  let block = event.block.number.toI32();
   let contract = Ndx.bind(event.address);
   let snapshot = initialiseSnapshot(timestamp);
   let recipentDelegate = contract.delegates(event.params.to);
   let senderDelegate = contract.delegates(event.params.from);
-  let sender = senderDelegate.toHexString();
-  let recipent = recipentDelegate.toHexString();
-  let notEqual = sender != recipent;
+  let isSenderActive = event.params.from == senderDelegate;
+  let isRecipentActive = event.params.to == recipentDelegate;
+  let recipentWeight = contract.getCurrentVotes(event.params.to);
+  let senderWeight = contract.getCurrentVotes(event.params.from);
+  let senderBalance = contract.balanceOf(event.params.from);
+  let recipentPreviousWeight = contract.getPriorVotes(event.params.to, BigInt.fromI32(block - 1));
+  let senderPreviousWeight = contract.getPriorVotes(event.params.from, BigInt.fromI32(block - 1));
+  let recipentBalance = contract.balanceOf(event.params.to);
+  let recipentDelegatedWeight = recipentWeight.minus(recipentBalance);
+  let senderDelegatedWeight = senderWeight.minus(senderBalance);
+  let senderActiveWeight = senderBalance.minus(senderDelegatedWeight);
+  let recipentActiveWeight = recipentBalance.minus(recipentDelegatedWeight);
+  let notEqual = event.params.from != event.params.to;
+  let value = event.params.amount;
+  let BN_ZERO = BigInt.fromI32(0);
 
   if(event.params.from.toHexString() == NA){
     snapshot.inactive = snapshot.inactive.plus(value);
   } else if(notEqual){
-    if(recipent == NA){
+    if(event.params.to.toHexString() == NA){
       snapshot.inactive = snapshot.inactive.plus(value);
-    } else if(sender == NA) {
+    } else if(event.params.from.toHexString() == NA) {
       snapshot.inactive = snapshot.inactive.minus(value);
+    } else {
+      if(isRecipentActive && recipentDelegatedWeight > BN_ZERO) {
+        let previousBalance = recipentBalance.minus(value);
+        let previousActiveWeight = recipentPreviousWeight.minus(previousBalance);
+        let previousDelegatedWeight = recipentPreviousWeight.minus(previousActiveWeight);
+        let balanceDifference = recipentActiveWeight.minus(previousActiveWeight);
+        let totalWeightDifferece = recipentWeight.minus(recipentPreviousWeight);
+        let weightDifference = BigInt.fromI32(0);
+
+        if(recipentDelegatedWeight > previousDelegatedWeight) {
+          weightDifference = recipentDelegatedWeight.minus(previousDelegatedWeight);
+          snapshot.delegated = snapshot.delegated.plus(weightDifference);
+        } else {
+          weightDifference = previousDelegatedWeight.minus(recipentDelegatedWeight);
+          snapshot.delegated = snapshot.delegated.minus(weightDifference);
+        }
+
+      } if(isSenderActive && senderDelegatedWeight > BN_ZERO) {
+        let previousBalance = senderBalance.plus(value);
+        let previousActiveWeight = senderPreviousWeight.minus(previousBalance);
+        let previousDelegatedWeight = senderActiveWeight.minus(previousActiveWeight);
+        let balanceDifference = previousActiveWeight.minus(senderActiveWeight);
+        let totalWeightDifferece = recipentPreviousWeight.minus(senderWeight);
+        let weightDifference = BigInt.fromI32(0);
+
+        if(recipentDelegatedWeight > previousDelegatedWeight) {
+          weightDifference = senderDelegatedWeight.minus(previousDelegatedWeight);
+          snapshot.delegated = snapshot.delegated.plus(weightDifference);
+        } else  {
+          weightDifference = previousDelegatedWeight.minus(senderDelegatedWeight);
+          snapshot.delegated = snapshot.delegated.minus(weightDifference);
+        }
+
+      }
     }
   }
   snapshot.save();
@@ -62,7 +107,6 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
   let contract = Ndx.bind(event.address);
   let caller = event.params.delegate;
   let weightDifference = BigInt.fromI32(0);
-
   let snapshot = initialiseSnapshot(timestamp);
   let delegate = contract.delegates(caller);
   let isActive = delegate.toHexString() == caller.toHexString();
@@ -75,25 +119,12 @@ export function handleDelegateVoteChange(event: DelegateVotesChanged): void {
 
   if(isActive){
     if(currentVotes.minus(balance) > BigInt.fromI32(0)) {
-      let votesDelegated = newBalance.minus(balance);
-      let delegatedDifference = BigInt.fromI32(0);
-      let activeBalance = newBalance.minus(votesDelegated);
-
-      // Need to figure out a way to detect a user's balance at a specifc block,
-      // as it could verify how much of their balance previous to the event
-      // are delegated to them. As the amount "newBalance" amd "previousBalance"
-      // include votes delegated to a individual + their own token balance.
-      
-      // Solution: Query balanceOf at a block that proceeds the event
-
       if(prevBalance <= newBalance){
-        delegatedDifference = newBalance.minus(prevBalance);
-
-        snapshot.delegated = snapshot.delegated.plus(delegatedDifference);
-      } else if(prevBalance > newBalance) {
-        delegatedDifference = prevBalance.minus(newBalance);
-
-        snapshot.delegated = snapshot.delegated.minus(delegatedDifference);
+        weightDifference = newBalance.minus(prevBalance);
+        snapshot.active = snapshot.active.plus(weightDifference);
+      } else {
+        weightDifference = prevBalance.minus(newBalance);
+        snapshot.active = snapshot.active.minus(weightDifference);
       }
     } else if(currentVotes == BigInt.fromI32(0)){
       snapshot.active = snapshot.active.minus(prevBalance);
