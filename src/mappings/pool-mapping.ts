@@ -36,14 +36,15 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
     .toHexString()
     .concat('-')
     .concat(BigInt.fromI32(dayID).toString());
-
-  if(pool.totalSupply == BigInt.fromI32(0)
-    || DailyPoolSnapshot.load(poolDayID) != null) return;
-
+  let shouldUpdate = DailyPoolSnapshot.load(poolDayID) != null;
   let snapshot = new DailyPoolSnapshot(poolDayID);
 
-  snapshot.pool = event.address.toHexString();
-  snapshot.date = dayID * 3600;
+  if(shouldUpdate){
+    return;
+  } else {
+    snapshot.pool = event.address.toHexString();
+    snapshot.date = dayID * 3600;
+  }
 
   let tokenAddresses = pool.tokensList;
   let balances = new Array<BigInt>()
@@ -72,7 +73,7 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
   pool.totalValueLockedUSD = totalValueLockedUSD
   pool.save()
   let totalSupply = convertEthToDecimal(pool.totalSupply);
-  let value = pool.totalValueLockedUSD.div(totalSupply);
+  let value = totalValueLockedUSD.div(totalSupply);
   snapshot.value = value;
   snapshot.totalSupply = totalSupply
   snapshot.feesTotalUSD = pool.feesTotalUSD
@@ -143,6 +144,7 @@ export function handleJoin(event: LOG_JOIN): void {
   tokenIn.save();
   pool.totalVolumeUSD = pool.totalVolumeUSD.plus(usdValue);
   pool.save();
+  updateTokenPrices(pool as IndexPool);
   updateDailySnapshot(pool, event);
 }
 
@@ -157,6 +159,7 @@ export function handleExit(event: LOG_EXIT): void {
   tokenOut.save();
   pool.totalVolumeUSD = pool.totalVolumeUSD.plus(usdValue);
   pool.save();
+  updateTokenPrices(pool as IndexPool);
   updateDailySnapshot(pool, event);
 }
 
@@ -175,7 +178,6 @@ export function handleDenormUpdated(event: LOG_DENORM_UPDATED): void {
   pool.save();
   token.denorm = event.params.newDenorm;
   token.save();
-  updateDailySnapshot(pool, event);
   updateTokenPrices(pool as IndexPool);
   updateDailySnapshot(pool as IndexPool, event);
 }

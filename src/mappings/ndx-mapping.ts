@@ -66,32 +66,18 @@ export function handleTransfer(event: Transfer): void {
         let previousActiveWeight = recipentPreviousWeight.minus(previousBalance);
         let previousDelegatedWeight = recipentPreviousWeight.minus(previousActiveWeight);
         let totalWeightDifferece = recipentWeight.minus(recipentPreviousWeight);
-        let weightDifference = BN_ZERO;
+        let weightDifference = recipentDelegatedWeight.minus(previousDelegatedWeight);
 
-        if(recipentDelegatedWeight > previousDelegatedWeight) {
-          weightDifference = recipentDelegatedWeight.minus(previousDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.minus(totalWeightDifferece.plus(weightDifference));
-        } else {
-          weightDifference = previousDelegatedWeight.minus(recipentDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.plus(totalWeightDifferece.plus(weightDifference));
-        }
-
+        snapshot.delegated = snapshot.delegated.minus(totalWeightDifferece.plus(weightDifference));
         snapshot.active = snapshot.active.minus(totalWeightDifferece.plus(value));
       } if(senderDelegatedWeight > BN_ZERO) {
         let previousBalance = senderBalance.plus(value);
         let previousActiveWeight = senderPreviousWeight.minus(previousBalance);
         let previousDelegatedWeight = senderPreviousWeight.minus(previousActiveWeight);
         let totalWeightDifferece = senderPreviousWeight.minus(senderWeight);
-        let weightDifference = BN_ZERO;
+        let weightDifference = previousDelegatedWeight.minus(senderDelegatedWeight);
 
-        if(senderDelegatedWeight > previousDelegatedWeight) {
-          weightDifference = senderDelegatedWeight.minus(previousDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.minus(totalWeightDifferece.plus(weightDifference));
-        } else  {
-          weightDifference = previousDelegatedWeight.minus(senderDelegatedWeight);
-          snapshot.delegated = snapshot.delegated.plus(totalWeightDifferece.plus(weightDifference));
-        }
-
+        snapshot.delegated = snapshot.delegated.plus(totalWeightDifferece.plus(weightDifference));
         snapshot.active = snapshot.active.plus(totalWeightDifferece.plus(value));
       }
     }
