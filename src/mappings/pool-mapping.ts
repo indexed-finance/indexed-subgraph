@@ -211,6 +211,7 @@ export function handleTransfer(event: Transfer): void {
     receiver.balance = receiver.balance.plus(event.params.amt);
     receiver.save();
   }
+  pool.save();
   updateTokenPrices(pool as IndexPool);
   updateDailySnapshot(pool, event);
 }
