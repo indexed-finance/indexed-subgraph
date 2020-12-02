@@ -8,9 +8,9 @@ dataSources:
     name: MarketCapSqrtController
     network: rinkeby
     source:
-      address: '0x19ef5269de76bf1165273FA13de3BB4A48f099b2'
+      address: '0xc4eF5556786fa4a2cDc10fc75e8CEFd7E0056cB5'
       abi: MarketCapSqrtController
-      startBlock: 7505343
+      startBlock: 7629065
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
