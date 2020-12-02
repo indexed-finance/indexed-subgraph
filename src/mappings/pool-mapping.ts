@@ -36,15 +36,13 @@ function updateDailySnapshot(pool: IndexPool, event: ethereum.Event): void {
     .toHexString()
     .concat('-')
     .concat(BigInt.fromI32(dayID).toString());
-  let shouldUpdate = DailyPoolSnapshot.load(poolDayID) != null;
-  let snapshot = new DailyPoolSnapshot(poolDayID);
-
-  if(shouldUpdate){
-    return;
-  } else {
-    snapshot.pool = event.address.toHexString();
-    snapshot.date = dayID * 3600;
+  let snapshot = DailyPoolSnapshot.load(poolDayID);
+  if (snapshot == null) {
+    snapshot = new DailyPoolSnapshot(poolDayID);
   }
+
+  snapshot.pool = event.address.toHexString();
+  snapshot.date = dayID * 3600;
 
   let tokenAddresses = pool.tokensList;
   let balances = new Array<BigInt>()
@@ -149,8 +147,9 @@ export function handleJoin(event: LOG_JOIN): void {
 }
 
 export function handleExit(event: LOG_EXIT): void {
-  let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
   let pool = IndexPool.load(event.address.toHexString()) as IndexPool
+  updateTokenPrices(pool as IndexPool);
+  let tokenOut = loadUnderlyingToken(event.address, event.params.tokenOut);
   let tokenOutStore = Token.load(event.params.tokenOut.toHexString());
   let tokenOutDecimal = convertTokenToDecimal(event.params.tokenAmountOut, tokenOutStore.decimals);
   let usdValue = tokenOutDecimal.times(tokenOutStore.priceUSD);
@@ -159,7 +158,6 @@ export function handleExit(event: LOG_EXIT): void {
   tokenOut.save();
   pool.totalVolumeUSD = pool.totalVolumeUSD.plus(usdValue);
   pool.save();
-  updateTokenPrices(pool as IndexPool);
   updateDailySnapshot(pool, event);
 }
 
