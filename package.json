@@ -8,8 +8,8 @@
     "create-local": "graph create indexed-finance/indexed-subgraph --node http://127.0.0.1:8020",
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy indexed-finance/indexed-v1 --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
-    "deploy-local": "graph deploy indexed-finance/indexed-v1 --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
+    "deploy": "graph deploy indexed-finance/indexed --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
+    "deploy-local": "graph deploy indexed-finance/indexed --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.18.0",
