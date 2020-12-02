@@ -1,16 +1,16 @@
 specVersion: 0.0.2
-description: Indexed V1
+description: Indexed
 repository: https://github.com/indexed-finance/indexed-subgraph
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: MarketCapSqrtController
-    network: rinkeby
+    network: mainnet
     source:
-      address: '0xc4eF5556786fa4a2cDc10fc75e8CEFd7E0056cB5'
+      address: '0xF00A38376C8668fC1f3Cd3dAeef42E0E44A7Fcdb'
       abi: MarketCapSqrtController
-      startBlock: 7629065
+      startBlock: 11372000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -49,11 +49,11 @@ dataSources:
       file: ./src/mappings/controller-mapping.ts
   - kind: ethereum/contract
     name: GovernorAlpha
-    network: rinkeby
+    network: mainnet
     source:
       address: '0x6E64317e50a38F9A06D902978E283295AF9ED6f8'
       abi: GovernorAlpha
-      startBlock: 7548858
+      startBlock: 11349686
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -78,11 +78,11 @@ dataSources:
       file: ./src/mappings/dao-mapping.ts
   - kind: ethereum/contract
     name: Ndx
-    network: rinkeby
+    network: mainnet
     source:
       address: '0x2342084BaCed2081093de5729de81FcB9DE77CA6'
       abi: Ndx
-      startBlock: 7548856
+      startBlock: 11349686
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -102,11 +102,11 @@ dataSources:
       file: ./src/mappings/ndx-mapping.ts
   - kind: ethereum/contract
     name: StakingRewardsFactory
-    network: rinkeby
+    network: mainnet
     source:
       address: '0xF53FF1A3962Ea1CCA3F3D90Cb5C22EF3484858b0'
       abi: StakingRewardsFactory
-      startBlock: 7548859
+      startBlock: 11349686
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -125,7 +125,7 @@ dataSources:
 templates:
   - name: UnboundTokenSeller
     kind: ethereum/contract
-    network: rinkeby
+    network: mainnet
     source:
       abi: UnboundTokenSeller
     mapping:
@@ -151,7 +151,7 @@ templates:
       file: ./src/mappings/token-seller-mapping.ts
   - name: PoolInitializer
     kind: ethereum/contract
-    network: rinkeby
+    network: mainnet
     source:
       abi: PoolInitializer
     mapping:
@@ -178,7 +178,7 @@ templates:
       file: ./src/mappings/initializer-mapping.ts
   - name: IPool
     kind: ethereum/contract
-    network: rinkeby
+    network: mainnet
     source:
       abi: IPool
     mapping:
@@ -227,7 +227,7 @@ templates:
       file: ./src/mappings/pool-mapping.ts
   - name: StakingRewards
     kind: ethereum/contract
-    network: rinkeby
+    network: mainnet
     source:
       abi: StakingRewards
     mapping:
@@ -249,32 +249,3 @@ templates:
         - event: RewardPaid(indexed address,uint256)
           handler: handleRewardPaid
       file: ./src/mappings/staking-mapping.ts
-  # - name: Pair
-  #   kind: ethereum/contract
-  #   network: rinkeby
-  #   source:
-  #     abi: Pair
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.3
-  #     language: wasm/assemblyscript
-  #     file: ./src/mappings/uniswap-pair.ts
-  #     entities:
-  #       - Pair
-  #       - Token
-  #     abis:
-  #       - name: Pair
-  #         file: ./abis/Pair.json
-  #       - name: Factory
-  #         file: ./abis/Factory.json
-  #       - name: IERC20
-  #         file: ./abis/IERC20.json
-  #     eventHandlers:
-  #       - event: Mint(indexed address,uint256,uint256)
-  #         handler: handleMint
-  #       - event: Burn(indexed address,uint256,uint256,indexed address)
-  #         handler: handleBurn
-  #       - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
-  #         handler: handleSwap
-  #       - event: Sync(uint112,uint112)
-  #         handler: handleSync
