@@ -4,8 +4,13 @@ import { convertTokenToDecimal, convertEthToDecimal } from './general'
 import { Pair as PairContract } from '../../generated/templates/IPool/Pair'
 import { Token } from '../../generated/schema';
 
+// Mainnet
 const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 const DAI_ADDRESS = '0x6b175474e89094c44da98b954eedeac495271d0f';
+
+// Rinkeby
+// const WETH_ADDRESS = '0x72710b0b93c8f86aef4ec8bd832868a15df50375';
+// const DAI_ADDRESS = '0xea88bdf6917e7e001cb9450e8df08164d75c965e';
 
 // Returns the reserves for the pair between token<->quoteToken as [tokenReserves, quoteTokenReserves]
 export function getPairReserves(

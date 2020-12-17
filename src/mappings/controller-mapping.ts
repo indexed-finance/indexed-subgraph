@@ -5,8 +5,8 @@ import {
   InitializerToken,
   TokenSeller
 } from '../../generated/schema';
-import { CategoryAdded, CategorySorted, MarketCapSqrtController, TokenAdded } from '../../generated/MarketCapSqrtController/MarketCapSqrtController';
-import { Category, Token } from '../../generated/schema';
+import { CategoryAdded, CategorySorted, MarketCapSqrtController, TokenAdded, TokenRemoved } from '../../generated/MarketCapSqrtController/MarketCapSqrtController';
+import { Category, Token, CategoryManager } from '../../generated/schema';
 
 import { IPool, PoolInitializer, UnboundTokenSeller } from '../../generated/templates';
 
@@ -24,8 +24,12 @@ import { hexToDecimal } from "../helpers/general";
 import { fetchTokenDecimals, fetchTokenName, fetchTokenSymbol } from '../helpers/uniswap';
 import { ZERO_BD } from '../helpers/general'
 import { getTokenPriceUSD } from '../helpers/pricing';
+import { getCategoryManager } from '../helpers/categories';
 
 export function handleNewCategory(event: CategoryAdded): void {
+  let categoryManager = getCategoryManager();
+  categoryManager.categoryIndex++;
+  categoryManager.save();
   let category = new Category(event.params.categoryID.toHexString());
   category.metadataHash = event.params.metadataHash;
   category.tokens = [];
@@ -47,6 +51,22 @@ export function handleTokenAdded(event: TokenAdded): void {
   }
   if (category.tokens == null) category.tokens = [];
   category.tokens.push(tokenAddress);
+  category.save();
+}
+
+export function handleTokenRemoved(event: TokenRemoved): void {
+  let categoryID = event.params.categoryID.toHexString();
+  let tokenAddress = event.params.token.toHexString();
+  let category = Category.load(categoryID);
+  let tokensList = new Array<string>();
+  let categoryTokens = category.tokens;
+  for (let i = 0; i < categoryTokens.length; i++) {
+    let token = categoryTokens[i];
+    if (token.toString() != tokenAddress) {
+      tokensList.push(token);
+    }
+  }
+  category.tokens = tokensList;
   category.save();
 }
 
@@ -121,6 +141,11 @@ export function handleNewPool(event: NewPoolInitializer): void {
 export function handlePoolInitialized(event: PoolInitialized): void {
   let poolAddress = event.params.pool;
   let sellerAddress = event.params.unboundTokenSeller;
+  let categoryManager = getCategoryManager();
+  let poolsList = categoryManager.poolsList;
+  poolsList.push(poolAddress.toHexString());
+  categoryManager.poolsList = poolsList;
+  categoryManager.save();
 
   // Start tracking the token seller contract
   UnboundTokenSeller.create(sellerAddress);

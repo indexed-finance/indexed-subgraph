@@ -218,6 +218,17 @@ export function handleTokenRemoved(event: LOG_TOKEN_REMOVED): void {
   let record = loadUnderlyingToken(event.address, event.params.token);
   record.pool = 'null';
   record.save();
+  let tokensList = new Array<Bytes>();
+  let pool = IndexPool.load(event.address.toHexString());
+  let currentTokens = pool.tokensList;
+  for (let i = 0 as i32; i < currentTokens.length; i++) {
+    let token = currentTokens[i];
+    if (token.toString() != event.params.token.toString()) {
+      tokensList.push(token);
+    }
+  }
+  pool.tokensList = tokensList;
+  pool.save();
 }
 
 export function handleTokenAdded(event: LOG_TOKEN_ADDED): void {
@@ -231,6 +242,11 @@ export function handleTokenAdded(event: LOG_TOKEN_ADDED): void {
   token.balance = ZERO_BI
   token.pool = event.address.toHexString();
   token.save();
+  let pool = IndexPool.load(event.address.toHexString());
+  let currentTokens = pool.tokensList;
+  currentTokens.push(event.params.token);
+  pool.tokensList = currentTokens;
+  pool.save();
 }
 
 export function handleTokenReady(event: LOG_TOKEN_READY): void {
