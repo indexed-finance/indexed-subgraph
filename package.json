@@ -3,13 +3,11 @@
   "version": "0.1.0",
   "repository": "https://github.com/indexed-finance/indexed-subgraph",
   "scripts": {
-    "compile": "truffle compile",
-    "create": "graph create indexed-finance/indexed-subgraph --node https://api.thegraph.com/deploy/",
-    "create-local": "graph create indexed-finance/indexed-subgraph --node http://127.0.0.1:8020",
-    "codegen": "graph codegen",
+    "codegen:mainnet": "graph codegen ./mainnet.subgraph.yaml",
+    "codegen:rinkeby": "graph codegen ./rinkeby.subgraph.yaml",
     "build": "graph build",
-    "deploy": "graph deploy indexed-finance/indexed --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
-    "deploy-local": "graph deploy indexed-finance/indexed --ipfs http://localhost:5001 --node http://127.0.0.1:8020"
+    "deploy:mainnet": "graph deploy indexed-finance/indexed mainnet.subgraph.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug",
+    "deploy:rinkeby": "graph deploy indexed-finance/indexed-v1 rinkeby.subgraph.yaml --ipfs https://api.thegraph.com/ipfs/ --node https://api.thegraph.com/deploy/ --debug"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.18.0",
@@ -18,9 +16,6 @@
   "dependencies": {
     "babel-polyfill": "^6.26.0",
     "babel-register": "^6.26.0",
-    "split2": "^3.2.2",
-    "truffle": "^5.1.42",
-    "truffle-contract": "^4.0.31",
-    "truffle-hdwallet-provider": "^1.0.4"
+    "split2": "^3.2.2"
   }
 }
