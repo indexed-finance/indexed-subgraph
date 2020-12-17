@@ -52,6 +52,12 @@ type NdxStakingPool @entity {
 
 # =========================== Tokens (Uniswap & Categories) ===========================
 
+type CategoryManager @entity {
+  id: ID! # ID is always 'CATEGORIES'
+  categoryIndex: Int # Number of categories that exist
+  poolsList: [String!]!
+}
+
 type Category @entity {
   id: ID!
   metadataHash: Bytes!
