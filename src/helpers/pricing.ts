@@ -1,6 +1,6 @@
 import { BigDecimal, Address, log } from '@graphprotocol/graph-ts'
 import { getPairAddress, sortTokens } from './uniswap'
-import { convertTokenToDecimal, convertEthToDecimal } from './general'
+import { convertTokenToDecimal, ONE_BD } from './general'
 import { Pair as PairContract } from '../../generated/templates/IPool/Pair'
 import { Token } from '../../generated/schema';
 
@@ -42,6 +42,12 @@ export function getTokenPrice(
   quoteToken: Address,
   quoteTokenDecimals: i32
 ): BigDecimal {
+  if (
+    token.equals(Address.fromString(WETH_ADDRESS)) &&
+    quoteToken.equals(Address.fromString(WETH_ADDRESS))
+  ) {
+    return ONE_BD;
+  }
   let reserves = getPairReserves(token, tokenDecimals, quoteToken, quoteTokenDecimals);
   // Price of token is quoteReserves / tokenReserves
   return reserves[1].div(reserves[0]);

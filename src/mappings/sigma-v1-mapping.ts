@@ -5,7 +5,7 @@ import {
   InitializerToken,
   TokenSeller
 } from '../../generated/schema';
-import { CategoryAdded, CategorySorted, MarketCapSqrtController, TokenAdded, TokenRemoved } from '../../generated/MarketCapSqrtController/MarketCapSqrtController';
+import { TokenListAdded, TokenListSorted, SigmaControllerV1, TokenAdded, TokenRemoved } from '../../generated/SigmaControllerV1/SigmaControllerV1';
 import { Category, Token, CategoryManager } from '../../generated/schema';
 
 import { IPool, PoolInitializer, UnboundTokenSeller } from '../../generated/templates';
@@ -17,29 +17,38 @@ import { PoolInitializer as PoolInitializerContract } from '../../generated/temp
 import {
   NewPoolInitializer,
   PoolInitialized
-} from '../../generated/MarketCapSqrtController/MarketCapSqrtController';
+} from '../../generated/SigmaControllerV1/SigmaControllerV1';
 
-import { BigInt, Bytes, log } from '@graphprotocol/graph-ts';
-import { hexToDecimal, ZERO_BI } from "../helpers/general";
+import { BigDecimal, BigInt, Bytes, log } from '@graphprotocol/graph-ts';
+import { hexToDecimal } from "../helpers/general";
 import { fetchTokenDecimals, fetchTokenName, fetchTokenSymbol } from '../helpers/uniswap';
 import { ZERO_BD } from '../helpers/general'
 import { getTokenPriceUSD } from '../helpers/pricing';
 import { getCategoryManager } from '../helpers/categories';
 
-export function handleNewCategory(event: CategoryAdded): void {
+function toSigmaIndex(id: string): string {
+  return "sigma-v1".concat(id);
+}
+
+export function handleNewTokenList(event: TokenListAdded): void {
   let categoryManager = getCategoryManager();
-  categoryManager.categoryIndex++;
+  categoryManager.sigmaV1Index++;
   categoryManager.save();
-  let category = new Category(event.params.categoryID.toHexString());
+  let category = new Category(
+    toSigmaIndex(event.params.listID.toHexString())
+  );
   category.metadataHash = event.params.metadataHash;
   category.tokens = [];
+  category.minScore = event.params.minimumScore;
+  category.maxScore = event.params.maximumScore;
+  category.strategyAddress = event.params.scoringStrategy;
   category.save();
 }
 
 export function handleTokenAdded(event: TokenAdded): void {
-  let categoryID = event.params.categoryID.toHexString();
+  let listID = toSigmaIndex(event.params.listID.toHexString());
   let tokenAddress = event.params.token.toHexString();
-  let category = Category.load(categoryID);
+  let category = Category.load(listID);
   let token = Token.load(tokenAddress);
   if (token == null) {
     token = new Token(tokenAddress);
@@ -55,9 +64,9 @@ export function handleTokenAdded(event: TokenAdded): void {
 }
 
 export function handleTokenRemoved(event: TokenRemoved): void {
-  let categoryID = event.params.categoryID.toHexString();
+  let listID = toSigmaIndex(event.params.listID.toHexString());
   let tokenAddress = event.params.token.toHexString();
-  let category = Category.load(categoryID);
+  let category = Category.load(listID);
   let tokensList = new Array<string>();
   let categoryTokens = category.tokens;
   for (let i = 0; i < categoryTokens.length; i++) {
@@ -70,10 +79,11 @@ export function handleTokenRemoved(event: TokenRemoved): void {
   category.save();
 }
 
-export function handleCategorySorted(event: CategorySorted): void {
-  let category = Category.load(event.params.categoryID.toHexString());
-  let oracle = MarketCapSqrtController.bind(event.address);
-  let tokens = oracle.getCategoryTokens(event.params.categoryID);
+export function handleTokenListSorted(event: TokenListSorted): void {
+  let listID = toSigmaIndex(event.params.listID.toHexString());
+  let category = Category.load(listID);
+  let controller = SigmaControllerV1.bind(event.address);
+  let tokens = controller.getTokenList(event.params.listID);
   let arr: string[] = [];
   for (let i = 0; i < tokens.length; i++) {
     arr.push(tokens[i].toHexString());
@@ -83,14 +93,13 @@ export function handleCategorySorted(event: CategorySorted): void {
 }
 
 export function handleNewPool(event: NewPoolInitializer): void {
-  let categoryID = event.params.categoryID.toHexString();
+  let listID = toSigmaIndex(event.params.listID.toHexString());
   let poolAddress = event.params.pool;
   let initializerAddress = event.params.initializer;
 
   // Start tracking the new pool contract and its initializer
   IPool.create(poolAddress);
   PoolInitializer.create(initializerAddress);
-
 
   let initializerContract = PoolInitializerContract.bind(initializerAddress);
 
@@ -119,7 +128,7 @@ export function handleNewPool(event: NewPoolInitializer): void {
   // Create the IndexPool entity.
   let pool = new IndexPool(poolAddress.toHexString());
   let ipool = IPoolContract.bind(poolAddress);
-  pool.category = categoryID;
+  pool.category = listID;
   pool.size = event.params.indexSize.toI32();
   pool.totalWeight = new BigInt(0);
   pool.totalSupply = new BigInt(0);
@@ -135,7 +144,7 @@ export function handleNewPool(event: NewPoolInitializer): void {
   pool.tokensList = new Array<Bytes>()
   let swapFee = ipool.getSwapFee()
   pool.swapFee = hexToDecimal(swapFee.toHexString(), 18);
-  pool.exitFee = ZERO_BD;
+  pool.exitFee = BigDecimal.fromString("0.005");
   pool.save();
 }
 
@@ -167,7 +176,6 @@ export function handlePoolInitialized(event: PoolInitialized): void {
   pool.totalSupply = ipool.totalSupply();
   let swapFee = ipool.getSwapFee();
   pool.swapFee = hexToDecimal(swapFee.toHexString(), 18);
-  pool.exitFee = ZERO_BD;
   // Set up the pool tokens
   let tokensList = new Array<Bytes>()
   let tokens = ipool.getCurrentTokens();

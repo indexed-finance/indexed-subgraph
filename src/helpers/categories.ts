@@ -5,6 +5,7 @@ export function getCategoryManager(): CategoryManager {
   if (categoryManager == null) {
     categoryManager = new CategoryManager('CATEGORIES');
     categoryManager.categoryIndex = 0;
+    categoryManager.sigmaV1Index = 0;
     categoryManager.poolsList = [];
     categoryManager.save();
   }

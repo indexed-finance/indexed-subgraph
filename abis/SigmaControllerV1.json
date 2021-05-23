@@ -3,54 +3,27 @@
     "inputs": [
       {
         "internalType": "contract IIndexedUniswapV2Oracle",
-        "name": "oracle",
+        "name": "uniswapOracle_",
         "type": "address"
       },
       {
         "internalType": "contract IPoolFactory",
-        "name": "factory",
+        "name": "poolFactory_",
         "type": "address"
       },
       {
         "internalType": "contract IDelegateCallProxyManager",
-        "name": "proxyManager",
+        "name": "proxyManager_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "defaultExitFeeRecipient_",
         "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "metadataHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "CategoryAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "CategorySorted",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -70,7 +43,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -120,7 +93,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -145,11 +118,61 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       }
     ],
     "name": "TokenAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "metadataHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "scoringStrategy",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint128",
+        "name": "minimumScore",
+        "type": "uint128"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint128",
+        "name": "maximumScore",
+        "type": "uint128"
+      }
+    ],
+    "name": "TokenListAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "listID",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokenListSorted",
     "type": "event"
   },
   {
@@ -164,7 +187,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       }
     ],
@@ -172,10 +195,153 @@
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "INITIALIZER_IMPLEMENTATION_ID",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_INDEX_SIZE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_LIST_TOKENS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MIN_BALANCE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MIN_INDEX_SIZE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "POOL_IMPLEMENTATION_ID",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "POOL_REWEIGH_DELAY",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "REWEIGHS_BEFORE_REINDEX",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SELLER_IMPLEMENTATION_ID",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SHORT_TWAP_MAX_TIME_ELAPSED",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SHORT_TWAP_MIN_TIME_ELAPSED",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -193,7 +359,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -209,50 +375,25 @@
   },
   {
     "inputs": [],
-    "name": "categoryIndex",
+    "name": "circuitBreaker",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
-        "name": "token",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "computeAverageMarketCap",
-    "outputs": [
-      {
-        "internalType": "uint144",
-        "name": "",
-        "type": "uint144"
-      }
-    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      }
-    ],
-    "name": "computeAverageMarketCaps",
+    "inputs": [],
+    "name": "circulatingMarketCapOracle",
     "outputs": [
       {
-        "internalType": "uint144[]",
-        "name": "marketCaps",
-        "type": "uint144[]"
+        "internalType": "contract ICirculatingMarketCapOracle",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -281,7 +422,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -326,11 +467,39 @@
         "internalType": "bytes32",
         "name": "metadataHash",
         "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "scoringStrategy",
+        "type": "address"
+      },
+      {
+        "internalType": "uint128",
+        "name": "minimumScore",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "maximumScore",
+        "type": "uint128"
       }
     ],
-    "name": "createCategory",
+    "name": "createTokenList",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "defaultExitFeeRecipient",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -344,6 +513,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "delegatee",
+        "type": "address"
+      }
+    ],
+    "name": "delegateCompLikeTokenFromPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -372,46 +564,21 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "poolAddress",
+        "type": "address"
       }
     ],
-    "name": "getCategoryMarketCaps",
-    "outputs": [
-      {
-        "internalType": "uint144[]",
-        "name": "marketCaps",
-        "type": "uint144[]"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "forceReindexPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getCategoryTokens",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -420,9 +587,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint144",
+        "internalType": "uint256",
         "name": "wethValue",
-        "type": "uint144"
+        "type": "uint256"
       }
     ],
     "name": "getInitialTokensAndBalances",
@@ -445,16 +612,21 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       }
     ],
-    "name": "getLastCategoryUpdate",
+    "name": "getSortedAndFilteredTokensAndScores",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "scores",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -464,16 +636,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "num",
+        "name": "listID",
         "type": "uint256"
       }
     ],
-    "name": "getTopCategoryTokens",
+    "name": "getTokenList",
     "outputs": [
       {
         "internalType": "address[]",
@@ -488,16 +655,118 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       }
     ],
-    "name": "hasCategory",
+    "name": "getTokenListConfig",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "scoringStrategy",
+        "type": "address"
+      },
+      {
+        "internalType": "uint128",
+        "name": "minimumScore",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "maximumScore",
+        "type": "uint128"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      }
+    ],
+    "name": "getTokenScores",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "scores",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTopTokensAndScores",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "scores",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "indexPoolMetadata",
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "initialized",
         "type": "bool"
+      },
+      {
+        "internalType": "uint16",
+        "name": "listID",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint8",
+        "name": "indexSize",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "reweighIndex",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint64",
+        "name": "lastReweigh",
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -513,8 +782,21 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "circuitBreaker_",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -523,7 +805,7 @@
         "type": "address"
       }
     ],
-    "name": "isTokenInCategory",
+    "name": "isTokenInlist",
     "outputs": [
       {
         "internalType": "bool",
@@ -532,32 +814,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "oracle",
-    "outputs": [
-      {
-        "internalType": "contract IIndexedUniswapV2Oracle",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "orderCategoryTokensByMarketCap",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -574,10 +830,23 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "poolFactory",
+    "outputs": [
+      {
+        "internalType": "contract IPoolFactory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -618,6 +887,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "proxyManager",
+    "outputs": [
+      {
+        "internalType": "contract IDelegateCallProxyManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -634,7 +916,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "categoryID",
+        "name": "listID",
         "type": "uint256"
       },
       {
@@ -671,6 +953,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "circuitBreaker_",
+        "type": "address"
+      }
+    ],
+    "name": "setCircuitBreaker",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint8",
         "name": "_defaultSellerPremium",
         "type": "uint8"
@@ -685,16 +980,16 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "poolAddress",
+        "name": "indexPool_",
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "maxPoolTokens",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "publicSwap",
+        "type": "bool"
       }
     ],
-    "name": "setMaxPoolTokens",
+    "name": "setPublicSwap",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -720,6 +1015,32 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "listID",
+        "type": "uint256"
+      }
+    ],
+    "name": "sortAndFilterTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tokenListCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
@@ -731,28 +1052,22 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "categoryID",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateCategoryPrices",
+    "inputs": [],
+    "name": "uniswapOracle",
     "outputs": [
       {
-        "internalType": "bool[]",
-        "name": "pricesUpdated",
-        "type": "bool[]"
+        "internalType": "contract IIndexedUniswapV2Oracle",
+        "name": "",
+        "type": "address"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "internalType": "contract IIndexPool",
+        "internalType": "address",
         "name": "pool",
         "type": "address"
       },
@@ -782,6 +1097,25 @@
     ],
     "name": "updateSellerPremium",
     "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "listID",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateTokenPrices",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "pricesUpdated",
+        "type": "bool[]"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   }

@@ -5,12 +5,58 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    name: SigmaControllerV1
+    network: rinkeby
+    source:
+      address: '0xF1AC4C70eA345F13cCF53a9B5be471ae241BA263'
+      abi: SigmaControllerV1
+      startBlock: 8142493
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - IndexPool
+        - PoolUnderlyingToken
+        - Category
+        - CategoryManager
+        - Token
+      abis:
+        - name: IPool
+          file: ./abis/IPool.json
+        - name: SigmaControllerV1
+          file: ./abis/SigmaControllerV1.json
+        - name: PoolInitializer
+          file: ./abis/PoolInitializer.json
+        - name: UnboundTokenSeller
+          file: ./abis/UnboundTokenSeller.json
+        - name: IERC20
+          file: ./abis/IERC20.json
+        - name: Pair
+          file: ./abis/Pair.json
+        - name: Factory
+          file: ./abis/Factory.json
+      eventHandlers:
+        - event: NewPoolInitializer(address,address,uint256,uint256)
+          handler: handleNewPool
+        - event: PoolInitialized(address,address,uint256,uint256)
+          handler: handlePoolInitialized
+        - event: TokenListAdded(uint256,bytes32,address,uint128,uint128)
+          handler: handleNewTokenList
+        - event: TokenAdded(address,uint256)
+          handler: handleTokenAdded
+        - event: TokenRemoved(address,uint256)
+          handler: handleTokenRemoved
+        - event: TokenListSorted(uint256)
+          handler: handleTokenListSorted
+      file: ./src/mappings/sigma-v1-mapping.ts
+  - kind: ethereum/contract
     name: MarketCapSqrtController
     network: rinkeby
     source:
-      address: '0xc4eF5556786fa4a2cDc10fc75e8CEFd7E0056cB5'
+      address: '0x57216e58Eb416B1Ba6A581605F9f6fc93798d481'
       abi: MarketCapSqrtController
-      startBlock: 7629065
+      startBlock: 8122655
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -54,9 +100,9 @@ dataSources:
     name: GovernorAlpha
     network: rinkeby
     source:
-      address: '0x6E64317e50a38F9A06D902978E283295AF9ED6f8'
+      address: '0x1117c8C1761c403d5569EB9dDb41E4282e446E06'
       abi: GovernorAlpha
-      startBlock: 7548858
+      startBlock: 8122655
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -67,6 +113,8 @@ dataSources:
       abis:
         - name: GovernorAlpha
           file: ./abis/GovernorAlpha.json
+        - name: Timelock
+          file: ./abis/Timelock.json
       eventHandlers:
         - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
           handler: createProposal
@@ -83,9 +131,9 @@ dataSources:
     name: Ndx
     network: rinkeby
     source:
-      address: '0x2342084BaCed2081093de5729de81FcB9DE77CA6'
+      address: '0x0865675e9534523adFb4D8B51c0E02812eCfbc67'
       abi: Ndx
-      startBlock: 7548856
+      startBlock: 8122655
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -103,28 +151,28 @@ dataSources:
         - event: DelegateChanged(indexed address,indexed address,indexed address)
           handler: handleDelegateChanged
       file: ./src/mappings/ndx-mapping.ts
-  - kind: ethereum/contract
-    name: StakingRewardsFactory
-    network: rinkeby
-    source:
-      address: '0xF53FF1A3962Ea1CCA3F3D90Cb5C22EF3484858b0'
-      abi: StakingRewardsFactory
-      startBlock: 7548859
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - NdxStakingPool
-      abis:
-        - name: StakingRewardsFactory
-          file: ./abis/StakingRewardsFactory.json
-      eventHandlers:
-        - event: IndexPoolStakingRewardsAdded(address,address)
-          handler: handleIndexPoolRewardsAdded
-        - event: UniswapStakingRewardsAdded(address,address,address)
-          handler: handleUniswapStakingRewardsAdded
-      file: ./src/mappings/staking-factory-mapping.ts
+#  - kind: ethereum/contract
+#    name: StakingRewardsFactory
+#    network: rinkeby
+#    source:
+#      address: '0x8d12A344580Bc0bC4E684248067F5d9d3908C864'
+#      abi: StakingRewardsFactory
+#      startBlock: 7768607
+#    mapping:
+#      kind: ethereum/events
+#      apiVersion: 0.0.4
+#      language: wasm/assemblyscript
+#      entities:
+#        - NdxStakingPool
+#      abis:
+#        - name: StakingRewardsFactory
+#          file: ./abis/StakingRewardsFactory.json
+#      eventHandlers:
+#        - event: IndexPoolStakingRewardsAdded(address,address)
+#          handler: handleIndexPoolRewardsAdded
+#        - event: UniswapStakingRewardsAdded(address,address,address)
+#          handler: handleUniswapStakingRewardsAdded
+#      file: ./src/mappings/staking-factory-mapping.ts
 templates:
   - name: UnboundTokenSeller
     kind: ethereum/contract
@@ -225,8 +273,6 @@ templates:
           handler: handleTransfer
         - event: LOG_SWAP_FEE_UPDATED(uint256)
           handler: handleSwapFeeUpdated
-        - event: LOG_MAX_TOKENS_UPDATED(uint256)
-          handler: handleMaxTokensUpdated
       file: ./src/mappings/pool-mapping.ts
   - name: StakingRewards
     kind: ethereum/contract

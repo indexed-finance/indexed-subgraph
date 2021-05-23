@@ -5,10 +5,12 @@ type Proposal @entity {
   id: ID!
   state: String!
   proposer: Bytes!
+  eta: Int
   action: Bytes
   expiry: Int!
   for: BigInt!
   against: BigInt!
+  startBlock: BigInt!
   votes: [Vote!]!
   targets: [Bytes!]!
   values: [BigInt!]!
@@ -54,7 +56,8 @@ type NdxStakingPool @entity {
 
 type CategoryManager @entity {
   id: ID! # ID is always 'CATEGORIES'
-  categoryIndex: Int # Number of categories that exist
+  categoryIndex: Int # Number of categories that exist on the base controller
+  sigmaV1Index: Int # Number of categories that exist on the sigma v1 controller
   poolsList: [String!]!
 }
 
@@ -63,6 +66,9 @@ type Category @entity {
   metadataHash: Bytes!
   tokens: [Token!]!
   indexPools: [IndexPool!]! @derivedFrom(field: "category")
+  strategyAddress: Bytes
+  minScore: BigInt
+  maxScore: BigInt
 }
 
 type Token @entity {
@@ -98,6 +104,7 @@ type IndexPool @entity {
   balances: [IndexPoolBalance!] @derivedFrom(field: "pool")             # user balances of pool tokens
   totalWeight: BigInt!                                                  # total denormalized weight
   swapFee: BigDecimal!                                                  # swap fee
+  exitFee: BigDecimal!                                                  # exit fee
 
   dailySnapshots: [DailyPoolSnapshot!]! @derivedFrom(field: "pool")
 
@@ -147,17 +154,6 @@ type IndexPoolBalance @entity {
   id: ID!
   pool: IndexPool!
   balance: BigInt!
-}
-
-type Swap @entity {
-  id: ID!
-  caller: Bytes!
-  tokenIn: Bytes!
-  tokenOut: Bytes!
-  tokenAmountIn: BigInt!
-  tokenAmountOut: BigInt!
-  pool: IndexPool!
-  timestamp: Int!
 }
 
 # =========================== Index Pool Initializers ===========================
@@ -227,4 +223,21 @@ type TokenForSale @entity {
   token: Token!
   # Amount of tokens left to sell
   amount: BigInt!
+}
+
+# =========================== Events ===========================
+
+type Swap @entity {
+  id: ID!
+  caller: Bytes!
+  tokenIn: Bytes!
+  tokenOut: Bytes!
+  tokenAmountIn: BigInt!
+  tokenAmountOut: BigInt!
+  pool: IndexPool!
+  timestamp: Int!
+}
+
+type Mint @entity {
+  id: ID!
 }

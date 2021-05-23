@@ -1,4 +1,5 @@
-import { ProposalCreated, ProposalQueued, ProposalCanceled, ProposalExecuted, VoteCast } from '../../generated/GovernorAlpha/GovernorAlpha';
+import { ProposalCreated, ProposalQueued, ProposalCanceled, ProposalExecuted, VoteCast, GovernorAlpha } from '../../generated/GovernorAlpha/GovernorAlpha';
+import { Timelock } from '../../generated/GovernorAlpha/Timelock';
 import { Proposal, Vote } from '../../generated/schema';
 import { BigInt, Bytes, Address } from '@graphprotocol/graph-ts';
 
@@ -6,6 +7,7 @@ export function createProposal(event: ProposalCreated): void {
   let proposal = new Proposal(event.params.id.toHexString());
   let title = proposal.description.substring(0, 35)
 
+  proposal.startBlock = event.block.number;
   proposal.proposer = event.transaction.from;
   proposal.targets = event.params.targets as Array<Bytes>;
   proposal.calldatas = event.params.calldatas as Array<Bytes>;
@@ -51,7 +53,14 @@ export function cancelProposal(event: ProposalCanceled): void {
 }
 
 export function queueProposal(event: ProposalQueued): void {
-  manageProposal(event.params.id.toHexString(), event.transaction.hash, "2");
+  let gov = GovernorAlpha.bind(event.address);
+  let timelock = Timelock.bind(gov.timelock());
+  let delay = timelock.delay();
+  let proposal = Proposal.load(event.params.id.toHexString());
+  proposal.eta = event.block.timestamp.plus(delay).toI32();
+  proposal.action = event.transaction.hash;
+  proposal.state = "2";
+  proposal.save();
 }
 
 export function executeProposal(event: ProposalExecuted): void {

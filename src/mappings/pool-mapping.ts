@@ -262,14 +262,6 @@ export function handleUpdateMinimumBalance(event: LOG_MINIMUM_BALANCE_UPDATED): 
   token.save();
 }
 
-export function handleMaxTokensUpdated(event: LOG_MAX_TOKENS_UPDATED): void {
-  let pool = IndexPool.load(event.address.toHexString());
-  pool.maxTotalSupply = event.params.maxPoolTokens;
-  pool.save();
-  updateTokenPrices(pool as IndexPool);
-  updateDailySnapshot(pool as IndexPool, event);
-}
-
 export function handleSwapFeeUpdated(event: LOG_SWAP_FEE_UPDATED): void {
   let pool = IndexPool.load(event.address.toHexString());
   let swapFee = hexToDecimal(event.params.swapFee.toHexString(), 18);

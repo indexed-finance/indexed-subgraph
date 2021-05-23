@@ -1,5 +1,5 @@
 import { NdxStakingPool } from "../../generated/schema";
-import { RewardPaid, Staked, StakingRewards, Withdrawn } from "../../generated/templates/StakingRewards/StakingRewards";
+import { RewardPaid, Staked, StakingRewards, Withdrawn, RewardsDurationUpdated } from "../../generated/templates/StakingRewards/StakingRewards";
 import { RewardAdded } from "../../generated/templates/StakingRewards/StakingRewards";
 
 import { BigInt, Address } from "@graphprotocol/graph-ts";
@@ -8,6 +8,7 @@ export function handleRewardAdded(event: RewardAdded): void {
   let pool = intialisePool(event.address, event.block.timestamp);
 
   pool.isReady = true;
+  pool.totalRewards = event.params.reward;
   pool.save();
 }
 

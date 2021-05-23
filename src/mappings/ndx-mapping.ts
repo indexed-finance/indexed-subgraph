@@ -18,7 +18,7 @@ export function handleDelegateChanged(event: DelegateChanged): void {
     if(from == NA){
       snapshot.inactive = snapshot.inactive.minus(votes);
       snapshot.voters++;
-    } else if(to == NA){
+    } else if (to == NA){
       snapshot.inactive = snapshot.inactive.plus(votes);
       snapshot.voters--;
     } else if (from == delegator){
